@@ -131,3 +131,16 @@ class LeagueEditTest(TestCase):
                                    json.dumps(put_data),
                                    content_type='application/json')
         self.assertEqual(response.status_code, 404)
+
+class LeagueDeleteTest(TestCase):
+    def test_delete_league(self):
+        """Delete a league"""
+        league = League(id='AFL', name='Always Failing Law')
+        league.save()
+        response = self.client.delete('/v1/leagues/AFL')
+        self.assertEqual(response.status_code, 204)
+
+    def test_no_such_league(self):
+        """Delete a non-existent league"""
+        response = self.client.delete('/v1/leagues/no_such_league')
+        self.assertEqual(response.status_code, 404)
