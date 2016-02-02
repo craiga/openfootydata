@@ -1,5 +1,6 @@
 import json
 import uuid
+from pprint import pprint
 
 from django.test import TestCase
 from django.core import urlresolvers
@@ -52,7 +53,6 @@ class LeagueListTest(TestCase):
         data = json.loads(response.content.decode(response.charset))
         self.assertEqual(len(data['results']), 0)
 
-
 class LeagueCreateTest(TestCase):
     def test_create_league(self):
         """Create a league."""
@@ -94,3 +94,40 @@ class LeagueCreateTest(TestCase):
         """Create a league without a name"""
         response = self.client.post('/v1/leagues', {'id': 'blah'})
         self.assertEqual(response.status_code, 400)
+
+class LeagueEditTest(TestCase):
+    def test_edit_league(self):
+        """Edit a league"""
+        league = League(id='AFL', name='Always Failing Law')
+        league.save()
+        put_data = {'id': 'AFL', 'name': 'Australian Football League'}
+        response = self.client.put('/v1/leagues/AFL',
+                                   json.dumps(put_data),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        response_data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(response_data['id'], 'AFL')
+        self.assertEqual(response_data['name'], 'Australian Football League')
+        self.assertRegex(response_data['url'], '/v1/leagues/AFL$')
+        league.refresh_from_db()
+        self.assertEqual(league.id, 'AFL')
+        self.assertEqual(league.name, 'Australian Football League')
+
+    def test_missing_name(self):
+        """Edit a league without a name"""
+        league = League(id='AFL', name='Always Failing Law')
+        league.save()
+        put_data = {'id': 'AFL'}
+        response = self.client.put('/v1/leagues/AFL',
+                                   json.dumps(put_data),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_no_such_league(self):
+        """Edit a non-existent league"""
+        put_data = {'id': 'AFL', 'name': 'Australian Football League'}
+        response = self.client.put('/v1/leagues/no_such_league',
+                                   json.dumps(put_data),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 404)
