@@ -51,3 +51,46 @@ class LeagueListTest(TestCase):
         self.assertEqual(response['Content-Type'], 'application/json')
         data = json.loads(response.content.decode(response.charset))
         self.assertEqual(len(data['results']), 0)
+
+
+class LeagueCreateTest(TestCase):
+    def test_create_league(self):
+        """Create a league."""
+        post_data = {'id': 'AFL', 'name': 'Australian Football League'}
+        response = self.client.post('/v1/leagues', post_data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        self.assertRegex(response['Location'], '/v1/leagues/AFL$')
+        response_data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(response_data['id'], 'AFL')
+        self.assertEqual(response_data['name'], 'Australian Football League')
+        self.assertRegex(response_data['url'], '/v1/leagues/AFL$')
+        league = League.objects.get(pk='AFL')
+        self.assertEqual(league.id, 'AFL')
+        self.assertEqual(league.name, 'Australian Football League')
+
+    def test_missing_id(self):
+        """Create a league without an ID"""
+        response = self.client.post('/v1/leagues', {'name': 'blah'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_id(self):
+        """Create a league with an invalid ID"""
+        response = self.client.post('/v1/leagues', {'id': '', 'name': 'blah'})
+        self.assertEqual(response.status_code, 400)
+        invalid_post_data = {'id': 'x' * 201, 'name': 'blah'}
+        response = self.client.post('/v1/leagues', invalid_post_data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_existing_id(self):
+        """Create a league with an ID that alrady exists"""
+        league = League(id='AFL', name='Australian Football League')
+        league.save()
+        post_data = {'id': 'AFL', 'name': 'Australian Football League'}
+        response = self.client.post('/v1/leagues', post_data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_missing_name(self):
+        """Create a league without a name"""
+        response = self.client.post('/v1/leagues', {'id': 'blah'})
+        self.assertEqual(response.status_code, 400)
