@@ -3,7 +3,7 @@
 from rest_framework import serializers
 from rest_framework.utils.serializer_helpers import ReturnDict
 
-from models.models import League
+from models import models
 
 class LeagueSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(
@@ -11,5 +11,14 @@ class LeagueSerializer(serializers.HyperlinkedModelSerializer):
         lookup_field='id'
     )
     class Meta:
-        model = League
+        model = models.League
         fields = ('id', 'name', 'url')
+
+class TeamSerializer(serializers.ModelSerializer):
+    # url = serializers.HyperlinkedIdentityField(
+    #     view_name='api_v1:team_detail',
+    #     lookup_field='id'
+    # )
+    class Meta:
+        model = models.Team
+        # fields = ('id', 'name', 'url')
