@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework import generics
 
 from models import models
@@ -17,9 +18,28 @@ class TeamList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         league_id = self.kwargs['league_id']
-        return models.Team.objects.filter(league__id=league_id)
+        try:
+            league = models.League.objects.get(pk=league_id)
+        except models.League.DoesNotExist:
+            raise Http404
+        return models.Team.objects.filter(league=league)
+
+    def create(self, request, *args, **kwargs):
+        request.data['league'] = kwargs['league_id']
+        return super(TeamList, self).create(request, *args, **kwargs)
 
 class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
-    lookup_fields = ('league_id', 'team_id')
-    queryset = models.Team.objects.all()
+    lookup_field = 'id'
     serializer_class = serializers.TeamSerializer
+
+    def get_queryset(self):
+        league_id = self.kwargs['league_id']
+        try:
+            league = models.League.objects.get(pk=league_id)
+        except models.League.DoesNotExist:
+            raise Http404
+        return models.Team.objects.filter(league=league)
+
+    def update(self, request, *args, **kwargs):
+        request.data['league'] = kwargs['league_id']
+        return super(TeamDetail, self).update(request, *args, **kwargs)

@@ -1,7 +1,6 @@
 from django.conf.urls import url
 
 from rest_framework.urlpatterns import format_suffix_patterns
-from rest_framework_nested import routers
 
 from . import views
 
@@ -12,7 +11,7 @@ urlpatterns = [
     url(r'^leagues/(?P<league_id>\w+)/teams$',
         views.TeamList.as_view(),
         name='team_list'),
-    url(r'^leagues/(?P<league_id>\w+)/teams/(?P<team_id>\w+)$',
+    url(r'^leagues/(?P<league_id>\w+)/teams/(?P<id>\w+)$',
         views.TeamDetail.as_view(),
         name='team_detail'),
 ]

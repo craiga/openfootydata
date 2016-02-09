@@ -5,7 +5,8 @@ from colorful.fields import RGBColorField
 
 class League(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
-        validators.MinLengthValidator(1)
+        validators.MinLengthValidator(1),
+        validators.RegexValidator(r'^\w+$')
     ])
     name = models.TextField()
 
@@ -13,11 +14,10 @@ class League(models.Model):
         """String representation of a League."""
         return self.name
 
-
-
 class Team(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
-        validators.MinLengthValidator(1)
+        validators.MinLengthValidator(1),
+        validators.RegexValidator('^\w+$')
     ])
     league = models.ForeignKey(League, on_delete=models.PROTECT)
     name = models.TextField()

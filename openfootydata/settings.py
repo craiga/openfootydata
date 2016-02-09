@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'models',
     'rest_framework',
+    'colorful',
     'api_v1'
 )
 
