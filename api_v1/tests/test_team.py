@@ -287,7 +287,7 @@ class TeamEditTest(TestCase):
         self.assertEqual(team.name, put_data['name'])
         self.assertEqual(team.primary_colour, put_data['primary_colour'])
 
-    def test_no_secondary_or_tertiary_colours(self):
+    def test_unset_secondary_and_tertiary_colours(self):
         """Edit a team setting secondary and tertiary colours to None."""
         team = create_team()
         put_data = {'id': team.id,
