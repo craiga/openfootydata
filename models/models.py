@@ -17,7 +17,7 @@ class League(models.Model):
 class Team(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
         validators.MinLengthValidator(1),
-        validators.RegexValidator('^\w+$')
+        validators.RegexValidator(r'^\w+$')
     ])
     league = models.ForeignKey(League, on_delete=models.PROTECT)
     name = models.TextField()
@@ -27,4 +27,16 @@ class Team(models.Model):
 
     def __str__(self):
         """String representation of a League."""
+        return self.name
+
+class Season(models.Model):
+    id = models.CharField(max_length=200, primary_key=True, validators=[
+        validators.MinLengthValidator(1),
+        validators.RegexValidator(r'^\w+$')
+    ])
+    league = models.ForeignKey(League, on_delete=models.PROTECT)
+    name = models.TextField()
+
+    def __str__(self):
+        """String representation of a Season."""
         return self.name

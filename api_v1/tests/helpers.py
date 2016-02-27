@@ -28,3 +28,12 @@ def create_team(league=None):
                        tertiary_colour=random_colour())
     team.save()
     return team
+
+def create_season(league=None):
+    if league is None:
+        league = create_league()
+    season = models.Season(id=random_string(),
+                           league=league,
+                           name=random_string())
+    season.save()
+    return season

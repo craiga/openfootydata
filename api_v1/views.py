@@ -43,3 +43,34 @@ class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(TeamDetail, self).update(request, *args, **kwargs)
+
+class SeasonList(generics.ListCreateAPIView):
+    serializer_class = serializers.SeasonSerializer
+
+    def get_queryset(self):
+        league_id = self.kwargs['league_id']
+        try:
+            league = models.League.objects.get(pk=league_id)
+        except models.League.DoesNotExist:
+            raise Http404
+        return models.Season.objects.filter(league=league)
+
+    def create(self, request, *args, **kwargs):
+        request.data['league'] = kwargs['league_id']
+        return super(SeasonList, self).create(request, *args, **kwargs)
+
+class SeasonDetail(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'id'
+    serializer_class = serializers.SeasonSerializer
+
+    def get_queryset(self):
+        league_id = self.kwargs['league_id']
+        try:
+            league = models.League.objects.get(pk=league_id)
+        except models.League.DoesNotExist:
+            raise Http404
+        return models.Season.objects.filter(league=league)
+
+    def update(self, request, *args, **kwargs):
+        request.data['league'] = kwargs['league_id']
+        return super(SeasonDetail, self).update(request, *args, **kwargs)

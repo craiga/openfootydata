@@ -10,7 +10,7 @@ class LeagueSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.League
 
-class TeamHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
+class LeagueHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
     def get_url(self, obj, view_name, request, format):
         return self.reverse(view_name,
                             kwargs={'id': obj.id, 'league_id': obj.league.id},
@@ -18,8 +18,15 @@ class TeamHyperlinkedIdentityField(serializers.HyperlinkedIdentityField):
                             format=format)
 
 class TeamSerializer(serializers.ModelSerializer):
-    url = TeamHyperlinkedIdentityField(
+    url = LeagueHyperlinkedIdentityField(
         view_name='api_v1:team_detail'
     )
     class Meta:
         model = models.Team
+
+class SeasonSerializer(serializers.ModelSerializer):
+    url = LeagueHyperlinkedIdentityField(
+        view_name='api_v1:season_detail'
+    )
+    class Meta:
+        model = models.Season
