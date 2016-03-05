@@ -30,3 +30,11 @@ class SeasonSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = models.Season
+
+class VenueSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='api_v1:venue_detail',
+        lookup_field='id'
+    )
+    class Meta:
+        model = models.Venue

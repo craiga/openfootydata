@@ -37,3 +37,9 @@ def create_season(league=None):
                            name=random_string())
     season.save()
     return season
+
+def create_venue():
+    venue = models.Venue(id=random_string(),
+                          name=random_string())
+    venue.save()
+    return venue

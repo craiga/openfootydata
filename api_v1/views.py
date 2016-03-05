@@ -74,3 +74,12 @@ class SeasonDetail(generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(SeasonDetail, self).update(request, *args, **kwargs)
+
+class VenueList(generics.ListCreateAPIView):
+    queryset = models.Venue.objects.all()
+    serializer_class = serializers.VenueSerializer
+
+class VenueDetail(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'id'
+    queryset = models.Venue.objects.all()
+    serializer_class = serializers.VenueSerializer

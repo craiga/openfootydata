@@ -11,7 +11,7 @@ class League(models.Model):
     name = models.TextField()
 
     def __str__(self):
-        """String representation of a League."""
+        """String representation of a league."""
         return self.name
 
 class Team(models.Model):
@@ -26,7 +26,7 @@ class Team(models.Model):
     tertiary_colour = RGBColorField(blank=True, null=True)
 
     def __str__(self):
-        """String representation of a League."""
+        """String representation of a team."""
         return self.name
 
 class Season(models.Model):
@@ -38,5 +38,16 @@ class Season(models.Model):
     name = models.TextField()
 
     def __str__(self):
-        """String representation of a Season."""
+        """String representation of a season."""
+        return self.name
+
+class Venue(models.Model):
+    id = models.CharField(max_length=200, primary_key=True, validators=[
+        validators.MinLengthValidator(1),
+        validators.RegexValidator(r'^\w+$')
+    ])
+    name = models.TextField()
+
+    def __str__(self):
+        """String representation of a venue."""
         return self.name
