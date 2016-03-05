@@ -33,7 +33,6 @@ class TeamDetailTest(TestCase):
     def test_no_such_league(self):
         """Test when no league exists."""
         team = create_team()
-        team.save()
         url = '/v1/leagues/no-such-league/teams/{}'.format(team.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)

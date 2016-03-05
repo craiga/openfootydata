@@ -30,7 +30,6 @@ class SeasonDetailTest(TestCase):
     def test_no_such_league(self):
         """Test when no league exists."""
         season = create_season()
-        season.save()
         url = '/v1/leagues/no-such-league/seasons/{}'.format(season.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
