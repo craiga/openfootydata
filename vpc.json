@@ -1,0 +1,258 @@
+{
+    "Description": "openfootydata VPC",
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "OpenfootydataVpc": {
+            "Type" : "AWS::EC2::VPC",
+            "Properties" : {
+                "CidrBlock" : "10.0.0.0/16",
+                "EnableDnsSupport" : true,
+                "EnableDnsHostnames" : false,
+                "InstanceTenancy" : "default",
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataVpc"}
+                ]
+            }
+        },
+        "OpenfootydataElbSubnetA": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2a",
+                "CidrBlock" : "10.0.0.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataElbSubnetA"}
+                ]
+            }
+        },
+        "OpenfootydataElbSubnetB": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2b",
+                "CidrBlock" : "10.0.1.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataElbSubnetB"}
+                ]
+            }
+        },
+        "OpenfootydataElbSubnetC": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2c",
+                "CidrBlock" : "10.0.2.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataElbSubnetC"}
+                ]
+            }
+        },
+        "OpenfootydataApiSubnetA": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2a",
+                "CidrBlock" : "10.0.3.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataApiSubnetA"}
+                ]
+            }
+        },
+        "OpenfootydataApiSubnetB": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2b",
+                "CidrBlock" : "10.0.4.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataApiSubnetB"}
+                ]
+            }
+        },
+        "OpenfootydataApiSubnetC": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2c",
+                "CidrBlock" : "10.0.5.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataApiSubnetC"}
+                ]
+            }
+        },
+        "OpenfootydataDbSubnetA": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2a",
+                "CidrBlock" : "10.0.6.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataDbSubnetA"}
+                ]
+            }
+        },
+        "OpenfootydataDbSubnetB": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2b",
+                "CidrBlock" : "10.0.7.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataDbSubnetB"}
+                ]
+            }
+        },
+        "OpenfootydataDbSubnetC": {
+            "Type" : "AWS::EC2::Subnet",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "AvailabilityZone" : "ap-southeast-2c",
+                "CidrBlock" : "10.0.8.0/24",
+                "MapPublicIpOnLaunch" : true,
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataDbSubnetC"}
+                ]
+            }
+        },
+        "OpenfootydataIg": {
+            "Type" : "AWS::EC2::InternetGateway",
+            "Properties" : {
+                "Tags": [
+                    {"Key": "Name", "Value": "OpenfootydataIg"}
+                ]
+            }
+        },
+        "OpenfootydataIgAttachment": {
+            "Type" : "AWS::EC2::VPCGatewayAttachment",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "InternetGatewayId" : { "Ref" : "OpenfootydataIg" }
+            }
+        },
+        "OpenfootydataElbRt" : {
+            "Type" : "AWS::EC2::RouteTable",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "Tags" : [
+                    { "Key" : "Name", "Value" : "OpenfootydataElbRt" }
+                ]
+            }
+        },
+        "OpenfootydataApiRt" : {
+            "Type" : "AWS::EC2::RouteTable",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "Tags" : [
+                    { "Key" : "Name", "Value" : "OpenfootydataApiRt" }
+                ]
+            }
+        },
+        "OpenfootydataDbRt" : {
+            "Type" : "AWS::EC2::RouteTable",
+            "Properties" : {
+                "VpcId" : { "Ref" : "OpenfootydataVpc" },
+                "Tags" : [
+                    { "Key" : "Name", "Value" : "OpenfootydataDbRt" }
+                ]
+            }
+        },
+        "OpenfootydataElbRtSubnetAAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataElbSubnetA" },
+                "RouteTableId" : { "Ref" : "OpenfootydataElbRt" }
+            }
+        },
+        "OpenfootydataElbRtSubnetBAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataElbSubnetB" },
+                "RouteTableId" : { "Ref" : "OpenfootydataElbRt" }
+            }
+        },
+        "OpenfootydataElbRtSubnetCAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataElbSubnetC" },
+                "RouteTableId" : { "Ref" : "OpenfootydataElbRt" }
+            }
+        },
+        "OpenfootydataApiRtSubnetAAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataApiSubnetA" },
+                "RouteTableId" : { "Ref" : "OpenfootydataApiRt" }
+            }
+        },
+        "OpenfootydataApiRtSubnetBAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataApiSubnetB" },
+                "RouteTableId" : { "Ref" : "OpenfootydataApiRt" }
+            }
+        },
+        "OpenfootydataApiRtSubnetCAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataApiSubnetC" },
+                "RouteTableId" : { "Ref" : "OpenfootydataApiRt" }
+            }
+        },
+        "OpenfootydataDbRtSubnetAAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataDbSubnetA" },
+                "RouteTableId" : { "Ref" : "OpenfootydataDbRt" }
+            }
+        },
+        "OpenfootydataDbRtSubnetBAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataDbSubnetB" },
+                "RouteTableId" : { "Ref" : "OpenfootydataDbRt" }
+            }
+        },
+        "OpenfootydataDbRtSubnetCAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "OpenfootydataDbSubnetC" },
+                "RouteTableId" : { "Ref" : "OpenfootydataDbRt" }
+            }
+        },
+        "OpenfootydataElbRtIgRoute" : {
+            "Type" : "AWS::EC2::Route",
+            "DependsOn" : "OpenfootydataIg",
+            "Properties" : {
+                "RouteTableId" : { "Ref" : "OpenfootydataElbRt" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "OpenfootydataIg" }
+            }
+        },
+        "OpenfootydataApiRtIgRoute" : {
+            "Type" : "AWS::EC2::Route",
+            "DependsOn" : "OpenfootydataIg",
+            "Properties" : {
+                "RouteTableId" : { "Ref" : "OpenfootydataApiRt" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "OpenfootydataIg" }
+            }
+        },
+        "OpenfootydataDbRtIgRoute" : {
+            "Type" : "AWS::EC2::Route",
+            "DependsOn" : "OpenfootydataIg",
+            "Properties" : {
+                "RouteTableId" : { "Ref" : "OpenfootydataDbRt" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "OpenfootydataIg" }
+            }
+        }
+    }
+}
