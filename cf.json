@@ -253,6 +253,59 @@
                 "DestinationCidrBlock" : "0.0.0.0/0",
                 "GatewayId" : { "Ref" : "OpenfootydataIg" }
             }
+        },
+        "OpenfootydataElbSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "OpenfootydataElbSecurityGroup",
+                "VpcId" : {"Ref" : "OpenfootydataVpc"},
+                "SecurityGroupIngress" : [{
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "80",
+                    "ToPort" : "80",
+                    "CidrIp" : "0.0.0.0/0"
+                }],
+                "Tags" : [{
+                    "Key": "Name",
+                    "Value" : "OpenfootydataElbSecurityGroup"
+                }]
+            }
+        },
+        "OpenfootydataApiSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "OpenfootydataApiSecurityGroup",
+                "VpcId" : {"Ref" : "OpenfootydataVpc"},
+                "SecurityGroupIngress" : [{
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "80",
+                    "ToPort" : "80",
+                    "CidrIp" : "0.0.0.0/0"
+                }],
+                "Tags" : [{
+                    "Key": "Name",
+                    "Value" : "OpenfootydataApiSecurityGroup"
+                }]
+            }
+        },
+        "OpenfootydataDbSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : "OpenfootydataDbSecurityGroup",
+                "VpcId" : {"Ref" : "OpenfootydataVpc"},
+                "SecurityGroupIngress" : [{
+                    "IpProtocol" : "tcp",
+                    "FromPort" : "5432",
+                    "ToPort" : "5432",
+                    "SourceSecurityGroupId": {
+                        "Ref" : "OpenfootydataApiSecurityGroup"
+                    }
+                }],
+                "Tags" : [{
+                    "Key": "Name",
+                    "Value" : "OpenfootydataDbSecurityGroup"
+                }]
+            }
         }
     }
 }
