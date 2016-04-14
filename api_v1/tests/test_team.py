@@ -79,6 +79,30 @@ class TeamListTest(TestCase):
         self.assertTrue(seen_team1)
         self.assertTrue(seen_team2)
 
+    def test_filter_teams(self):
+        """Get a filtered list of teams."""
+        league = create_league()
+        team1 = create_team(league)
+        team2 = create_team(league)
+        response = self.client.get('/v1/leagues/{}/teams?name={}'.format(
+            league.id, team1.name))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], team1.id)
+        self.assertEqual(data['results'][0]['name'], team1.name)
+        self.assertEqual(data['results'][0]['primary_colour'],
+                         team1.primary_colour)
+        self.assertEqual(data['results'][0]['secondary_colour'],
+                         team1.secondary_colour)
+        self.assertEqual(data['results'][0]['tertiary_colour'],
+                         team1.tertiary_colour)
+        url_regex = r'/v1/leagues/{}/teams/{}$'.format(team1.league.id,
+                                                       team1.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+        self.assertEqual(data['results'][0]['league'], team1.league.id)
+
     def test_no_teams_in_league(self):
         """Get a list of teams when none exist in the given league."""
         league1 = create_league()
