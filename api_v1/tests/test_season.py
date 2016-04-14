@@ -72,6 +72,24 @@ class SeasonListTest(TestCase):
         self.assertTrue(seen_season1)
         self.assertTrue(seen_season2)
 
+    def test_filter_seasons(self):
+        """Get a list of seasons filtered by name."""
+        league = create_league()
+        season1 = create_season(league)
+        season2 = create_season(league)
+        season3 = create_season()
+        response = self.client.get('/v1/leagues/{}/seasons?name={}'.format(
+            league.id, season1.name))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], season1.id)
+        self.assertEqual(data['results'][0]['name'], season1.name)
+        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(league.id, season1.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+        self.assertEqual(data['results'][0]['league'], season1.league.id)
+
     def test_no_seasons_in_league(self):
         """Get a list of seasons when none exist in the given league."""
         league1 = create_league()

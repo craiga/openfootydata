@@ -48,6 +48,7 @@ class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class SeasonList(generics.ListCreateAPIView):
     serializer_class = serializers.SeasonSerializer
+    filter_fields = ('name',)
 
     def get_queryset(self):
         league_id = self.kwargs['league_id']
