@@ -21,7 +21,7 @@ class Team(models.Model):
     ])
     league = models.ForeignKey(League, on_delete=models.PROTECT)
     name = models.TextField()
-    primary_colour = RGBColorField()
+    primary_colour = RGBColorField(blank=True, null=True)
     secondary_colour = RGBColorField(blank=True, null=True)
     tertiary_colour = RGBColorField(blank=True, null=True)
 

@@ -155,12 +155,11 @@ class TeamCreateTest(TestCase):
         self.assertEqual(team.tertiary_colour, post_data['tertiary_colour'])
         self.assertEqual(team.league.id, league.id)
 
-    def test_no_secondary_or_tertiary_colours(self):
-        """Create a team without secondary and tertiary colours."""
+    def test_no_colours(self):
+        """Create a team without colours."""
         league = create_league()
         post_data = {'id': random_string(),
-                     'name': random_string(),
-                     'primary_colour': random_colour()}
+                     'name': random_string()}
         url = '/v1/leagues/{}/teams'.format(league.id)
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, 201)
@@ -168,14 +167,13 @@ class TeamCreateTest(TestCase):
         response_data = json.loads(response.content.decode(response.charset))
         self.assertEqual(response_data['id'], post_data['id'])
         self.assertEqual(response_data['name'], post_data['name'])
-        self.assertEqual(response_data['primary_colour'],
-                         post_data['primary_colour'])
+        self.assertEqual(response_data['primary_colour'], None)
         self.assertEqual(response_data['secondary_colour'], None)
         self.assertEqual(response_data['tertiary_colour'], None)
         team = Team.objects.get(pk=post_data['id'])
         self.assertEqual(team.id, post_data['id'])
         self.assertEqual(team.name, post_data['name'])
-        self.assertEqual(team.primary_colour, post_data['primary_colour'])
+        self.assertEqual(team.primary_colour, None)
         self.assertEqual(team.secondary_colour, None)
         self.assertEqual(team.tertiary_colour, None)
         self.assertEqual(team.league.id, league.id)
@@ -214,15 +212,6 @@ class TeamCreateTest(TestCase):
         league = create_league()
         post_data = {'id': random_string(),
                      'primary_colour': random_colour()}
-        url = '/v1/leagues/{}/teams'.format(league.id)
-        response = self.client.post(url, post_data)
-        self.assertEqual(response.status_code, 400)
-
-    def test_missing_primary_colour(self):
-        """Create a team without a primary colour"""
-        league = create_league()
-        post_data = {'id': random_string(),
-                     'name': random_colour()}
         url = '/v1/leagues/{}/teams'.format(league.id)
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, 400)
@@ -287,12 +276,11 @@ class TeamEditTest(TestCase):
         self.assertEqual(team.tertiary_colour, put_data['tertiary_colour'])
         self.assertEqual(team.league.id, team.league.id)
 
-    def test_no_secondary_or_tertiary_colours(self):
-        """Edit a team with no secondary or tertiary colours."""
+    def test_no_colours(self):
+        """Edit a team with no colours."""
         team = create_team()
         put_data = {'id': team.id,
-                    'name': random_string(),
-                    'primary_colour': random_colour()}
+                    'name': random_string()}
         url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
@@ -302,20 +290,19 @@ class TeamEditTest(TestCase):
         response_data = json.loads(response.content.decode(response.charset))
         self.assertEqual(response_data['id'], put_data['id'])
         self.assertEqual(response_data['name'], put_data['name'])
-        self.assertEqual(response_data['primary_colour'],
-                         put_data['primary_colour'])
-        self.assertEqual(response_data['secondary_colour'], team.secondary_colour)
+        self.assertEqual(response_data['primary_colour'], team.primary_colour)
+        self.assertEqual(response_data['secondary_colour'],
+                                       team.secondary_colour)
         self.assertEqual(response_data['tertiary_colour'], team.tertiary_colour)
         team.refresh_from_db()
         self.assertEqual(team.name, put_data['name'])
-        self.assertEqual(team.primary_colour, put_data['primary_colour'])
 
-    def test_unset_secondary_and_tertiary_colours(self):
-        """Edit a team setting secondary and tertiary colours to None."""
+    def test_unset_colours(self):
+        """Edit a team setting all colours to None."""
         team = create_team()
         put_data = {'id': team.id,
                     'name': random_string(),
-                    'primary_colour': random_colour(),
+                    'primary_colour': None,
                     'secondary_colour': None,
                     'tertiary_colour': None}
         url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
@@ -327,13 +314,12 @@ class TeamEditTest(TestCase):
         response_data = json.loads(response.content.decode(response.charset))
         self.assertEqual(response_data['id'], put_data['id'])
         self.assertEqual(response_data['name'], put_data['name'])
-        self.assertEqual(response_data['primary_colour'],
-                         put_data['primary_colour'])
+        self.assertEqual(response_data['primary_colour'], None)
         self.assertEqual(response_data['secondary_colour'], None)
         self.assertEqual(response_data['tertiary_colour'], None)
         team.refresh_from_db()
         self.assertEqual(team.name, put_data['name'])
-        self.assertEqual(team.primary_colour, put_data['primary_colour'])
+        self.assertEqual(team.primary_colour, None)
         self.assertEqual(team.secondary_colour, None)
         self.assertEqual(team.tertiary_colour, None)
 
@@ -385,17 +371,6 @@ class TeamEditTest(TestCase):
                                    content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_missing_primary_colour(self):
-        """Edit a team without a primary colour"""
-        team = create_team()
-        put_data = {'id': team.id,
-                    'name': random_string()}
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
-        response = self.client.put(url,
-                                   json.dumps(put_data),
-                                   content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-
     def test_invalid_colours(self):
         """Edit a team with invalid colours"""
         team = create_team()
@@ -404,7 +379,9 @@ class TeamEditTest(TestCase):
         for invalid_colour in invalid_colours:
             put_data = {'id': random_string(),
                         'name': random_string(),
-                        'primary_colour': invalid_colour}
+                        'primary_colour': invalid_colour,
+                        'secondary_colour': random_colour(),
+                        'tertiary_colour': random_colour()}
             response = self.client.put(url,
                                        json.dumps(put_data),
                                        content_type='application/json')
