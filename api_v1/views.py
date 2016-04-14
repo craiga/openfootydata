@@ -7,6 +7,7 @@ from api_v1 import serializers
 class LeagueList(generics.ListCreateAPIView):
     queryset = models.League.objects.all()
     serializer_class = serializers.LeagueSerializer
+    filter_fields = ('name',)
 
 class LeagueDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'

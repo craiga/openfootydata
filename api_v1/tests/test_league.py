@@ -48,6 +48,30 @@ class LeagueListTest(TestCase):
         self.assertTrue(seen_league1)
         self.assertTrue(seen_league2)
 
+    def test_filter_leagues(self):
+        """Get a list of leagues filtered by name."""
+        league1 = create_league()
+        league2 = create_league()
+        response = self.client.get('/v1/leagues?name=' + league1.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], league1.id)
+        self.assertEqual(data['results'][0]['name'], league1.name)
+        url_regex = r'/v1/leagues/{}$'.format(league1.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+        response = self.client.get('/v1/leagues?name=' + league2.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], league2.id)
+        self.assertEqual(data['results'][0]['name'], league2.name)
+        url_regex = r'/v1/leagues/{}$'.format(league2.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+
+
     def test_no_leagues(self):
         """Get a list of leagues when none exist."""
         response = self.client.get('/v1/leagues')
