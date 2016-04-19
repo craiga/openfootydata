@@ -16,7 +16,8 @@ class SeasonDetailTest(TestCase):
         data = json.loads(response.content.decode(response.charset))
         self.assertEqual(data['id'], season.id)
         self.assertEqual(data['name'], season.name)
-        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(season.league.id, season.id)
+        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(season.league.id,
+                                                         season.id)
         self.assertRegex(data['url'], url_regex)
         self.assertEqual(data['league'], season.league.id)
 
@@ -65,8 +66,8 @@ class SeasonListTest(TestCase):
                 test_season = season2
             self.assertEqual(season['id'], test_season.id)
             self.assertEqual(season['name'], test_season.name)
-            url_regex = r'/v1/leagues/{}/seasons/{}$'.format(test_season.league.id,
-                                                           test_season.id)
+            url_regex = r'/v1/leagues/{}/seasons/{}$'.format(
+                test_season.league.id, test_season.id)
             self.assertRegex(season['url'], url_regex)
             self.assertEqual(season['league'], test_season.league.id)
         self.assertTrue(seen_season1)
@@ -181,7 +182,8 @@ class SeasonEditTest(TestCase):
         self.assertEqual(response_data['id'], put_data['id'])
         self.assertEqual(response_data['name'], put_data['name'])
         self.assertEqual(response_data['league'], season.league.id)
-        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(season.league.id, season.id)
+        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(season.league.id,
+                                                         season.id)
         self.assertRegex(response_data['url'], url_regex)
         season.refresh_from_db()
         self.assertEqual(season.name, put_data['name'])
