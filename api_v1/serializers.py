@@ -21,14 +21,15 @@ class LeagueSerializer(ModelSerializer):
 class LeagueRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
     def get_url(self, obj, view_name, request, format):
         return self.reverse(view_name,
-                            kwargs={'id': obj.id, 'league_id': obj.league.id},
+                            kwargs={self.lookup_url_kwarg: obj.id,
+                                    'league_id': obj.league.id},
                             request=request,
                             format=format)
 
 class SeasonRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
     def get_url(self, obj, view_name, request, format):
         return self.reverse(view_name,
-                            kwargs={'id': obj.id,
+                            kwargs={self.lookup_url_kwarg: obj.id,
                                     'season_id': obj.season.id,
                                     'league_id': obj.season.league.id},
                             request=request,
@@ -36,7 +37,8 @@ class SeasonRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
 
 class TeamSerializer(ModelSerializer):
     url = LeagueRelatedHyperlinkedIdentityField(
-        view_name='api_v1:team_detail'
+        view_name='api_v1:team_detail',
+        lookup_url_kwarg='id'
     )
     class Meta:
         model = models.Team
@@ -60,8 +62,15 @@ class TeamHyperlink(HyperlinkedRelatedField):
 
 class SeasonSerializer(ModelSerializer):
     url = LeagueRelatedHyperlinkedIdentityField(
-        view_name='api_v1:season_detail'
+        view_name='api_v1:season_detail',
+        lookup_url_kwarg='id'
     )
+    games = LeagueRelatedHyperlinkedIdentityField(
+        view_name='api_v1:game_list',
+        lookup_field='id',
+        lookup_url_kwarg='season_id'
+    )
+
     class Meta:
         model = models.Season
 
@@ -86,8 +95,6 @@ class GameSerializer(ModelSerializer):
 
     class Meta:
         model = models.Game
-
-
 
 class VenueSerializer(ModelSerializer):
     url = HyperlinkedIdentityField(
