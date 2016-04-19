@@ -10,6 +10,11 @@ class LeagueSerializer(ModelSerializer):
         view_name='api_v1:league_detail',
         lookup_field='id'
     )
+    seasons = HyperlinkedIdentityField(
+        view_name='api_v1:season_list',
+        lookup_field='id',
+        lookup_url_kwarg='league_id'
+    )
     class Meta:
         model = models.League
 

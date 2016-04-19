@@ -16,6 +16,8 @@ class LeagueDetailTest(TestCase):
         self.assertEqual(data['id'], league.id)
         self.assertEqual(data['name'], league.name)
         self.assertRegex(data['url'], '/v1/leagues/{}$'.format(league.id))
+        self.assertRegex(data['seasons'],
+                         '/v1/leagues/{}/seasons$'.format(league.id))
 
     def test_no_such_league(self):
         """Test when no league exists."""
@@ -45,6 +47,8 @@ class LeagueListTest(TestCase):
             self.assertEqual(league['name'], test_league.name)
             url_regex = r'/v1/leagues/{}$'.format(test_league.id)
             self.assertRegex(league['url'], url_regex)
+            url_regex = r'/v1/leagues/{}/seasons$'.format(test_league.id)
+            self.assertRegex(league['seasons'], url_regex)
         self.assertTrue(seen_league1)
         self.assertTrue(seen_league2)
 
@@ -61,6 +65,8 @@ class LeagueListTest(TestCase):
         self.assertEqual(data['results'][0]['name'], league1.name)
         url_regex = r'/v1/leagues/{}$'.format(league1.id)
         self.assertRegex(data['results'][0]['url'], url_regex)
+        url_regex = r'/v1/leagues/{}/seasons$'.format(league1.id)
+        self.assertRegex(data['results'][0]['seasons'], url_regex)
         response = self.client.get('/v1/leagues?name=' + league2.name)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/json')
@@ -70,6 +76,8 @@ class LeagueListTest(TestCase):
         self.assertEqual(data['results'][0]['name'], league2.name)
         url_regex = r'/v1/leagues/{}$'.format(league2.id)
         self.assertRegex(data['results'][0]['url'], url_regex)
+        url_regex = r'/v1/leagues/{}/seasons$'.format(league2.id)
+        self.assertRegex(data['results'][0]['seasons'], url_regex)
 
 
     def test_no_leagues(self):
@@ -93,6 +101,8 @@ class LeagueCreateTest(TestCase):
         self.assertEqual(response_data['id'], post_data['id'])
         self.assertEqual(response_data['name'], post_data['name'])
         self.assertRegex(response_data['url'], url_regex)
+        url_regex = r'/v1/leagues/{}/seasons$'.format(post_data['id'])
+        self.assertRegex(response_data['seasons'], url_regex)
         league = League.objects.get(pk=post_data['id'])
         self.assertEqual(league.id, post_data['id'])
         self.assertEqual(league.name, post_data['name'])
@@ -138,6 +148,8 @@ class LeagueEditTest(TestCase):
         self.assertEqual(response_data['name'], put_data['name'])
         url_regex = r'/v1/leagues/{}$'.format(league.id)
         self.assertRegex(response_data['url'], url_regex)
+        url_regex = r'/v1/leagues/{}/seasons$'.format(league.id)
+        self.assertRegex(response_data['seasons'], url_regex)
         league.refresh_from_db()
         self.assertEqual(league.name, put_data['name'])
 
