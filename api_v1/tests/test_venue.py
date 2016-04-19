@@ -48,6 +48,29 @@ class VenueListTest(TestCase):
         self.assertTrue(seen_venue1)
         self.assertTrue(seen_venue2)
 
+    def test_filter_venues(self):
+        """Get a list of venues filtered by name."""
+        venue1 = create_venue()
+        venue2 = create_venue()
+        response = self.client.get('/v1/venues?name=' + venue1.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], venue1.id)
+        self.assertEqual(data['results'][0]['name'], venue1.name)
+        url_regex = r'/v1/venues/{}$'.format(venue1.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+        response = self.client.get('/v1/venues?name=' + venue2.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], venue2.id)
+        self.assertEqual(data['results'][0]['name'], venue2.name)
+        url_regex = r'/v1/venues/{}$'.format(venue2.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+
     def test_no_venues(self):
         """Get a list of venues when none exist."""
         response = self.client.get('/v1/venues')

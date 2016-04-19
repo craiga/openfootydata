@@ -119,6 +119,7 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
 class VenueList(generics.ListCreateAPIView):
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
+    filter_fields = ('name',)
 
 class VenueDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
