@@ -76,7 +76,8 @@ class SeasonSerializer(ModelSerializer):
 
 class GameSerializer(ModelSerializer):
     url = SeasonRelatedHyperlinkedIdentityField(
-        view_name='api_v1:game_detail'
+        view_name='api_v1:game_detail',
+        lookup_url_kwarg='id'
     )
     venue = HyperlinkedRelatedField(
         view_name='api_v1:venue_detail',
