@@ -69,7 +69,9 @@ class Game(models.Model):
 
     def __str__(self):
         """String representation of a game."""
-        return '{} vs. {}'.format(self.team_1, self.team_2)
+        return '{} vs. {} at {}'.format(self.team_1,
+                                     self.team_2,
+                                     self.start.strftime('%c'))
 
     @property
     def team_1_score(self):
