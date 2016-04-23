@@ -49,7 +49,7 @@ class VenueAlternativeNameDetailTest(TestCase):
 class AlternativeNameListTest(TestCase):
     def test_list_alternative_names(self):
         """Get a list of alternative_names."""
-        venue = create_venue()
+        venue = create_venue(num_alternative_names=0)
         alt_name_1 = create_venue_alternative_name(venue)
         alt_name_2 = create_venue_alternative_name(venue)
         alt_name_3 = create_venue_alternative_name()
@@ -82,9 +82,7 @@ class AlternativeNameListTest(TestCase):
         venue.
         """
         venue1 = create_venue()
-        alt_name_1 = create_venue_alternative_name(venue1)
-        alt_name_2 = create_venue_alternative_name(venue1)
-        venue2 = create_venue()
+        venue2 = create_venue(num_alternative_names=0)
         response = self.client.get('/v1/venues/{}/alternative_names'.format(
             venue2.id))
         self.assertEqual(response.status_code, 200)

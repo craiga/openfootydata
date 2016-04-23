@@ -55,7 +55,9 @@ class Venue(models.Model):
 class VenueAlternativeName(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField()
-    venue = models.ForeignKey(Venue, on_delete=models.PROTECT)
+    venue = models.ForeignKey(Venue,
+                              on_delete=models.CASCADE,
+                              related_name='alternative_names')
 
     def __str__(self):
         """String representation of a venue's alternative name."""

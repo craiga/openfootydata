@@ -1,5 +1,6 @@
 from rest_framework.serializers import (HyperlinkedIdentityField,
                                         HyperlinkedRelatedField,
+                                        SlugRelatedField,
                                         ModelSerializer,
                                         IntegerField)
 
@@ -102,11 +103,9 @@ class VenueSerializer(ModelSerializer):
         view_name='api_v1:venue_detail',
         lookup_field='id'
     )
-    alternative_names = HyperlinkedIdentityField(
-        view_name='api_v1:venue_alternative_name_list',
-        lookup_field='id',
-        lookup_url_kwarg='venue_id'
-    )
+    alternative_names = SlugRelatedField(many=True,
+                                         read_only=True,
+                                         slug_field='name')
     class Meta:
         model = models.Venue
 
