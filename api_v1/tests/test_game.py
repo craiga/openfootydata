@@ -90,43 +90,60 @@ class GameListTest(TestCase):
         game2 = create_game(season=season, league=league)
         game3 = create_game()
         game4 = create_game(league=league)
+        if game1.start > game2.start:
+            tmp = game2
+            game2 = game1
+            game1= tmp
         response = self.client.get('/v1/leagues/{}/seasons/{}/games'.format(
             league.id, season.id))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/json')
         data = json.loads(response.content.decode(response.charset))
         self.assertEqual(len(data['results']), 2)
-        seen_game1 = False
-        seen_game2 = False
-        for game in data['results']:
-            if game['id'] == game1.id:
-                seen_game1 = True
-                test_game = game1
-            else:
-                seen_game2 = True
-                test_game = game2
-            self.assertEqual(game['id'], test_game.id)
-            self.assertEqual(dateutil.parser.parse(game['start']),
-                             test_game.start)
-            self.assertRegex(game['venue'],
-                             '/v1/venues/{}$'.format(test_game.venue.id))
-            team_1_regex = '/v1/leagues/{}/teams/{}$'.format(
-                test_game.season.league.id, test_game.team_1.id)
-            self.assertRegex(game['team_1'], team_1_regex)
-            self.assertEqual(game['team_1_score'], test_game.team_1_score)
-            self.assertEqual(game['team_1_goals'], test_game.team_1_goals)
-            self.assertEqual(game['team_1_behinds'], test_game.team_1_behinds)
-            team_2_regex = '/v1/leagues/{}/teams/{}$'.format(
-                test_game.season.league.id, test_game.team_2.id)
-            self.assertRegex(game['team_2'], team_2_regex)
-            self.assertEqual(game['team_2_score'], test_game.team_2_score)
-            self.assertEqual(game['team_2_goals'], test_game.team_2_goals)
-            self.assertEqual(game['team_2_behinds'], test_game.team_2_behinds)
-            url_regex = '/v1/leagues/{}/seasons/{}/games/{}$'.format(
-                test_game.season.league.id, test_game.season.id, test_game.id)
-            self.assertRegex(game['url'], url_regex)
-        self.assertTrue(seen_game1)
-        self.assertTrue(seen_game2)
+        self.assertEqual(data['results'][0]['id'], game1.id)
+        self.assertEqual(dateutil.parser.parse(data['results'][0]['start']),
+                         game1.start)
+        self.assertRegex(data['results'][0]['venue'],
+                         '/v1/venues/{}$'.format(game1.venue.id))
+        team_1_regex = '/v1/leagues/{}/teams/{}$'.format(game1.season.league.id,
+                                                         game1.team_1.id)
+        self.assertRegex(data['results'][0]['team_1'], team_1_regex)
+        self.assertEqual(data['results'][0]['team_1_score'], game1.team_1_score)
+        self.assertEqual(data['results'][0]['team_1_goals'], game1.team_1_goals)
+        self.assertEqual(data['results'][0]['team_1_behinds'],
+                         game1.team_1_behinds)
+        team_2_regex = '/v1/leagues/{}/teams/{}$'.format(game1.season.league.id,
+                                                         game1.team_2.id)
+        self.assertRegex(data['results'][0]['team_2'], team_2_regex)
+        self.assertEqual(data['results'][0]['team_2_score'], game1.team_2_score)
+        self.assertEqual(data['results'][0]['team_2_goals'], game1.team_2_goals)
+        self.assertEqual(data['results'][0]['team_2_behinds'],
+                         game1.team_2_behinds)
+        url_regex = '/v1/leagues/{}/seasons/{}/games/{}$'.format(
+            game1.season.league.id, game1.season.id, game1.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+        self.assertEqual(data['results'][1]['id'], game2.id)
+        self.assertEqual(dateutil.parser.parse(data['results'][1]['start']),
+                         game2.start)
+        self.assertRegex(data['results'][1]['venue'],
+                         '/v1/venues/{}$'.format(game2.venue.id))
+        team_1_regex = '/v1/leagues/{}/teams/{}$'.format(game2.season.league.id,
+                                                         game2.team_1.id)
+        self.assertRegex(data['results'][1]['team_1'], team_1_regex)
+        self.assertEqual(data['results'][1]['team_1_score'], game2.team_1_score)
+        self.assertEqual(data['results'][1]['team_1_goals'], game2.team_1_goals)
+        self.assertEqual(data['results'][1]['team_1_behinds'],
+                         game2.team_1_behinds)
+        team_2_regex = '/v1/leagues/{}/teams/{}$'.format(game2.season.league.id,
+                                                         game2.team_2.id)
+        self.assertRegex(data['results'][1]['team_2'], team_2_regex)
+        self.assertEqual(data['results'][1]['team_2_score'], game2.team_2_score)
+        self.assertEqual(data['results'][1]['team_2_goals'], game2.team_2_goals)
+        self.assertEqual(data['results'][1]['team_2_behinds'],
+                         game2.team_2_behinds)
+        url_regex = '/v1/leagues/{}/seasons/{}/games/{}$'.format(
+            game2.season.league.id, game2.season.id, game2.id)
+        self.assertRegex(data['results'][1]['url'], url_regex)
 
     def test_no_games_in_season(self):
         """Get a list of games when non exist in the given season."""

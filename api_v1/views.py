@@ -80,6 +80,7 @@ class SeasonDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class GameList(generics.ListCreateAPIView):
     serializer_class = serializers.GameSerializer
+    ordering = ('start',)
 
     def get_queryset(self):
         league_id = self.kwargs['league_id']
