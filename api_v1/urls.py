@@ -23,12 +23,19 @@ urlpatterns = [
     url(r'^leagues/(?P<league_id>\w+)/seasons/(?P<season_id>\w+)/games$',
         views.GameList.as_view(),
         name='game_list'),
-    url(r'^leagues/(?P<league_id>\w+)/seasons/(?P<season_id>\w+)/games/(?P<id>\d+)$',
+    url(r'^leagues/(?P<league_id>\w+)/seasons/(?P<season_id>\w+)'
+            '/games/(?P<id>\d+)$',
         views.GameDetail.as_view(),
         name='game_detail'),
     url(r'^venues$', views.VenueList.as_view(), name='venue_list'),
     url(r'^venues/(?P<id>\w+)$', views.VenueDetail.as_view(),
         name='venue_detail'),
+    url(r'^venues/(?P<venue_id>\w+)/alternative_names$',
+        views.VenueAlternativeNameList.as_view(),
+        name='venue_alternative_name_list'),
+    url(r'^venues/(?P<venue_id>\w+)/alternative_names/(?P<id>\d+)$',
+        views.VenueAlternativeNameDetail.as_view(),
+        name='venue_alternative_name_detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

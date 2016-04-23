@@ -16,6 +16,8 @@ class VenueDetailTest(TestCase):
         self.assertEqual(data['id'], venue.id)
         self.assertEqual(data['name'], venue.name)
         self.assertRegex(data['url'], '/v1/venues/{}$'.format(venue.id))
+        self.assertRegex(data['alternative_names'],
+            '/v1/venues/{}/alternative_names$'.format(venue.id))
 
     def test_no_such_venue(self):
         """Test when no venue exists."""
@@ -45,6 +47,9 @@ class VenueListTest(TestCase):
             self.assertEqual(venue['name'], test_venue.name)
             url_regex = r'/v1/venues/{}$'.format(test_venue.id)
             self.assertRegex(venue['url'], url_regex)
+            url_regex = r'/v1/venues/{}/alternative_names$'.format(
+                test_venue.id)
+            self.assertRegex(venue['alternative_names'], url_regex)
         self.assertTrue(seen_venue1)
         self.assertTrue(seen_venue2)
 
@@ -61,6 +66,8 @@ class VenueListTest(TestCase):
         self.assertEqual(data['results'][0]['name'], venue1.name)
         url_regex = r'/v1/venues/{}$'.format(venue1.id)
         self.assertRegex(data['results'][0]['url'], url_regex)
+        url_regex = r'/v1/venues/{}/alternative_names$'.format(venue1.id)
+        self.assertRegex(data['results'][0]['alternative_names'], url_regex)
         response = self.client.get('/v1/venues?name=' + venue2.name)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/json')
@@ -70,6 +77,8 @@ class VenueListTest(TestCase):
         self.assertEqual(data['results'][0]['name'], venue2.name)
         url_regex = r'/v1/venues/{}$'.format(venue2.id)
         self.assertRegex(data['results'][0]['url'], url_regex)
+        url_regex = r'/v1/venues/{}/alternative_names$'.format(venue2.id)
+        self.assertRegex(data['results'][0]['alternative_names'], url_regex)
 
     def test_no_venues(self):
         """Get a list of venues when none exist."""
@@ -93,6 +102,8 @@ class VenueCreateTest(TestCase):
         self.assertEqual(response_data['id'], post_data['id'])
         self.assertEqual(response_data['name'], post_data['name'])
         self.assertRegex(response_data['url'], url_regex)
+        url_regex = r'/v1/venues/{}/alternative_names$'.format(post_data['id'])
+        self.assertRegex(response_data['alternative_names'], url_regex)
         venue = Venue.objects.get(pk=post_data['id'])
         self.assertEqual(venue.id, post_data['id'])
         self.assertEqual(venue.name, post_data['name'])
@@ -138,6 +149,8 @@ class VenueEditTest(TestCase):
         self.assertEqual(response_data['name'], put_data['name'])
         url_regex = r'/v1/venues/{}$'.format(venue.id)
         self.assertRegex(response_data['url'], url_regex)
+        url_regex = r'/v1/venues/{}/alternative_names$'.format(venue.id)
+        self.assertRegex(response_data['alternative_names'], url_regex)
         venue.refresh_from_db()
         self.assertEqual(venue.name, put_data['name'])
 
