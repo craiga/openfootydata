@@ -78,6 +78,9 @@ class Game(models.Model):
     team_2_goals = models.PositiveIntegerField(default=0)
     team_2_behinds = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        unique_together = ('start', 'season', 'team_1', 'team_2')
+
     def __str__(self):
         """String representation of a game."""
         return '{} vs. {} at {}'.format(self.team_1,

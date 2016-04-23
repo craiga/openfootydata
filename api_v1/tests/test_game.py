@@ -237,7 +237,31 @@ class GameCreateTest(TestCase):
         self.assertEqual(game.team_2_goals, post_data['team_2_goals'])
         self.assertEqual(game.team_2_behinds, post_data['team_2_behinds'])
         self.assertEqual(game.season.id, season.id)
-    
+
+    def test_existing_game(self):
+        """Test creating a game which already exists."""
+        existing_game = create_game()
+        team_1 = existing_game.team_1
+        team_2 = existing_game.team_2
+        season = existing_game.season
+        venue_url = '/v1/venues/{}'.format(existing_game.venue.id)
+        team_1_url = '/v1/leagues/{}/teams/{}'.format(team_1.league.id,
+                                                      team_1.id)
+        team_2_url = '/v1/leagues/{}/teams/{}'.format(team_2.league.id,
+                                                      team_2.id)
+        post_data = {'start': existing_game.start,
+                     'venue': venue_url,
+                     'team_1': team_1_url,
+                     'team_1_goals': randint(0, 100),
+                     'team_1_behinds': randint(0, 100),
+                     'team_2': team_2_url,
+                     'team_2_goals': randint(0, 100),
+                     'team_2_behinds': randint(0, 100)}
+        url = '/v1/leagues/{}/seasons/{}/games'.format(season.league.id,
+                                                       season.id)
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, 400)
+
     def test_no_venue_or_scores(self):
         """Create a game with no venue or scores."""
         season = create_season()
