@@ -3,7 +3,7 @@ import json
 from django.test import TestCase
 
 from models.models import Venue
-from .helpers import create_venue, random_string
+from .helpers import create_venue, create_venue_alternative_name, random_string
 
 class VenueDetailTest(TestCase):
     def test_venue_detail(self):
@@ -78,6 +78,26 @@ class VenueListTest(TestCase):
         url_regex = r'/v1/venues/{}$'.format(venue2.id)
         self.assertRegex(data['results'][0]['url'], url_regex)
         url_regex = r'/v1/venues/{}/alternative_names$'.format(venue2.id)
+        self.assertRegex(data['results'][0]['alternative_names'], url_regex)
+
+    def test_filter_venues_by_alternative_name(self):
+        """Get a list of venues filtered by an alternative name."""
+        venue1 = create_venue()
+        alt_name_1 = create_venue_alternative_name(venue=venue1)
+        alt_name_2 = create_venue_alternative_name(venue=venue1)
+        venue2 = create_venue()
+        alt_name_3 = create_venue_alternative_name(venue=venue2)
+        response = self.client.get('/v1/venues?venuealternativename__name=' \
+            + alt_name_1.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], venue1.id)
+        self.assertEqual(data['results'][0]['name'], venue1.name)
+        url_regex = r'/v1/venues/{}$'.format(venue1.id)
+        self.assertRegex(data['results'][0]['url'], url_regex)
+        url_regex = r'/v1/venues/{}/alternative_names$'.format(venue1.id)
         self.assertRegex(data['results'][0]['alternative_names'], url_regex)
 
     def test_no_venues(self):
