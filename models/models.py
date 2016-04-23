@@ -52,6 +52,17 @@ class Venue(models.Model):
         """String representation of a venue."""
         return self.name
 
+class VenueAlternativeName(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.TextField()
+    venue = models.ForeignKey(Venue,
+                              on_delete=models.CASCADE,
+                              related_name='alternative_names')
+
+    def __str__(self):
+        """String representation of a venue's alternative name."""
+        return '{} (alternative name of {})'.format(self.name, self.venue.name)
+
 class Game(models.Model):
     id = models.AutoField(primary_key=True)
     start = models.DateTimeField()

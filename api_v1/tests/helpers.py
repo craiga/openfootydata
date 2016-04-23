@@ -51,11 +51,22 @@ def create_season(league=None):
     season.save()
     return season
 
-def create_venue():
+def create_venue(num_alternative_names=None):
+    if num_alternative_names is None:
+        num_alternative_names = random.randint(1, 20)
     venue = models.Venue(id=random_string(),
-                          name=random_string())
+                         name=random_string())
     venue.save()
+    for i in range(0, num_alternative_names):
+        create_venue_alternative_name(venue=venue)
     return venue
+
+def create_venue_alternative_name(venue=None):
+    if venue is None:
+        venue = create_venue()
+    alt_name = models.VenueAlternativeName(venue=venue, name=random_string())
+    alt_name.save()
+    return alt_name
 
 def create_game(league=None, season=None, venue=None, team_1=None, team_2=None):
     if league is None:

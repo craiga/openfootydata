@@ -119,9 +119,45 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
 class VenueList(generics.ListCreateAPIView):
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
-    filter_fields = ('name',)
+    filter_fields = ('name', 'alternative_names__name',)
 
 class VenueDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
+
+class VenueAlternativeNameList(generics.ListCreateAPIView):
+    serializer_class = serializers.VenueAlternativeNameSerializer
+    filter_fields = ('name',)
+
+    def get_queryset(self):
+        venue_id = self.kwargs['venue_id']
+        try:
+            venue = models.Venue.objects.get(pk=venue_id)
+        except models.Venue.DoesNotExist:
+            raise Http404
+        return models.VenueAlternativeName.objects.filter(venue=venue)
+
+    def create(self, request, *args, **kwargs):
+        request.data['venue'] = kwargs['venue_id']
+        return super(VenueAlternativeNameList, self).create(request,
+                                                            *args,
+                                                            **kwargs)
+
+class VenueAlternativeNameDetail(generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'id'
+    serializer_class = serializers.VenueAlternativeNameSerializer
+
+    def get_queryset(self):
+        venue_id = self.kwargs['venue_id']
+        try:
+            venue = models.Venue.objects.get(pk=venue_id)
+        except models.Venue.DoesNotExist:
+            raise Http404
+        return models.VenueAlternativeName.objects.filter(venue=venue)
+
+    def update(self, request, *args, **kwargs):
+        request.data['venue'] = kwargs['venue_id']
+        return super(VenueAlternativeNameDetail, self).update(request,
+                                                              *args,
+                                                              **kwargs)

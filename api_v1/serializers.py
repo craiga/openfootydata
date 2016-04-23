@@ -1,5 +1,6 @@
 from rest_framework.serializers import (HyperlinkedIdentityField,
                                         HyperlinkedRelatedField,
+                                        SlugRelatedField,
                                         ModelSerializer,
                                         IntegerField)
 
@@ -102,5 +103,26 @@ class VenueSerializer(ModelSerializer):
         view_name='api_v1:venue_detail',
         lookup_field='id'
     )
+    alternative_names = SlugRelatedField(many=True,
+                                         read_only=True,
+                                         slug_field='name')
     class Meta:
         model = models.Venue
+
+class VenueRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
+    def get_url(self, obj, view_name, request, format):
+        return self.reverse(view_name,
+                            kwargs={self.lookup_url_kwarg: obj.id,
+                                    'venue_id': obj.venue.id},
+                            request=request,
+                            format=format)
+
+
+class VenueAlternativeNameSerializer(ModelSerializer):
+    url = VenueRelatedHyperlinkedIdentityField(
+        view_name='api_v1:venue_alternative_name_detail',
+        lookup_url_kwarg='id'
+    )
+
+    class Meta:
+        model = models.VenueAlternativeName
