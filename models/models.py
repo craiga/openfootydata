@@ -50,6 +50,16 @@ class Venue(models.Model):
         validators.RegexValidator(r'^\w+$')
     ])
     name = models.TextField()
+    latitude = models.DecimalField(max_digits=8,
+                                   decimal_places=6,
+                                   validators=[
+                                       validators.MinValueValidator(-90),
+                                       validators.MaxValueValidator(90)])
+    longitude = models.DecimalField(max_digits=9,
+                                    decimal_places=6,
+                                    validators=[
+                                        validators.MinValueValidator(-180),
+                                        validators.MaxValueValidator(180)])
 
     def __str__(self):
         """String representation of a venue."""
