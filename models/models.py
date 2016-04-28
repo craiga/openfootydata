@@ -1,5 +1,8 @@
+from datetime import datetime
+
 from django.db import models
 from django.core import validators
+import pytz
 
 from colorful.fields import RGBColorField
 
@@ -83,9 +86,17 @@ class Game(models.Model):
 
     def __str__(self):
         """String representation of a game."""
-        return '{} vs. {} at {}'.format(self.team_1,
-                                     self.team_2,
-                                     self.start.strftime('%c'))
+        now = datetime.now(pytz.utc)
+        if self.start < now:
+            return '{} ({}.{} {}) vs. {} ({}.{} {}) at {}'.format(
+                self.team_1, self.team_1_goals, self.team_1_behinds,
+                self.team_1_score, self.team_2, self.team_2_goals,
+                self.team_2_behinds, self.team_2_score,
+                self.start.strftime('%c'))
+        else:
+            return '{} vs. {} at {}'.format(self.team_1,
+                                            self.team_2,
+                                            self.start.strftime('%c'))
 
     @property
     def team_1_score(self):
