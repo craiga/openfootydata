@@ -3,7 +3,9 @@ django-colorful==1.2
 django-filter==0.13.0
 djangorestframework==3.3.3
 Markdown==2.6.6
+numpy==1.11.0
 psycopg2==2.6.1
 python-dateutil==2.5.3
 pytz==2016.4
 six==1.10.0
+timezonefinder==1.5.4

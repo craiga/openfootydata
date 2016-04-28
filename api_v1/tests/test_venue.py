@@ -1,6 +1,5 @@
 import json
 from decimal import Decimal
-from pprint import pprint
 
 from django.test import TestCase
 
@@ -20,6 +19,7 @@ class VenueDetailTest(TestCase):
         self.assertEqual(data['name'], venue.name)
         self.assertEqual(Decimal(data['latitude']), venue.latitude)
         self.assertEqual(Decimal(data['longitude']), venue.longitude)
+        self.assertEqual(data['timezone'], venue.timezone)
         self.assertRegex(data['url'], '/v1/venues/{}$'.format(venue.id))
         self.assertEqual(set(data['alternative_names']),
                          {n.name for n in venue.alternative_names.all()})

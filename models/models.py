@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db import models
 from django.core import validators
 import pytz
+import timezonefinder
 
 from colorful.fields import RGBColorField
 
@@ -64,6 +65,14 @@ class Venue(models.Model):
     def __str__(self):
         """String representation of a venue."""
         return self.name
+
+    @property
+    def timezone(self):
+        """Get the timezone of this venue based on its latitude and
+        longitude.
+        """
+        tf = timezonefinder.TimezoneFinder()
+        return tf.timezone_at(lat=self.latitude, lng=self.longitude)
 
 class VenueAlternativeName(models.Model):
     id = models.AutoField(primary_key=True)

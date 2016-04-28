@@ -2,7 +2,8 @@ from rest_framework.serializers import (HyperlinkedIdentityField,
                                         HyperlinkedRelatedField,
                                         SlugRelatedField,
                                         ModelSerializer,
-                                        IntegerField)
+                                        IntegerField,
+                                        CharField)
 
 from models import models
 
@@ -106,6 +107,8 @@ class VenueSerializer(ModelSerializer):
     alternative_names = SlugRelatedField(many=True,
                                          read_only=True,
                                          slug_field='name')
+    timezone = CharField(read_only=True)
+
     class Meta:
         model = models.Venue
 
