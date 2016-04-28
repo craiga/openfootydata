@@ -1,6 +1,7 @@
 import random
 import string
 import datetime
+from decimal import Decimal
 
 from models import models
 
@@ -23,6 +24,17 @@ def random_datetime():
                              second=random.randint(0, 59),
                              microsecond=random.randint(0, 1000000 - 1),
                              tzinfo=datetime.timezone(timedelta))
+
+def random_float(min=-100, max=100):
+    return random.random() * (max - min) + min
+
+def random_decimal(min=-100, max=100, precision=6):
+    float_string = str(random_float(min, max))
+    try:
+        decimal_location = float_string.index('.')
+    except ValueError:
+        decimal_location = len(float_string)
+    return Decimal(float_string[:decimal_location + 1 + precision])
 
 def create_league():
     league = models.League(id=random_string(),
@@ -55,7 +67,9 @@ def create_venue(num_alternative_names=None):
     if num_alternative_names is None:
         num_alternative_names = random.randint(1, 20)
     venue = models.Venue(id=random_string(),
-                         name=random_string())
+                         name=random_string(),
+                         latitude=random_decimal(-90, 90),
+                         longitude=random_decimal(-180, 180))
     venue.save()
     for i in range(0, num_alternative_names):
         create_venue_alternative_name(venue=venue)
