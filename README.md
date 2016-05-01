@@ -1,4 +1,4 @@
-# openfootydata
+# Open Footy Data
 
 An API for Australian Football data.
 
