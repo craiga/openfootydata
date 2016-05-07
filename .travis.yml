@@ -1,0 +1,23 @@
+language: python
+python:
+    - "2.6"
+    - "2.7"
+    - "3.2"
+    - "3.3"
+    - "3.4"
+    - "3.5"
+    - "3.5-dev"
+    - "nightly"
+services:
+    - postgresql
+env:
+    - OFD_DB_NAME="openfootydata"
+    - OFD_DB_USER="postgres"
+    - OFD_DB_PASSWORD=""
+    - OFD_DB_HOST="127.0.0.1"
+before_script:
+    - psql -c 'CREATE DATABASE openfootydata;' -U postgres
+install:
+    - pip install -r requirements.txt"
+script:
+    - python manage.py test"
