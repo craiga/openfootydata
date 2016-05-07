@@ -1,5 +1,7 @@
 # Open Footy Data
 
+[![Build Status](https://travis-ci.org/craiga/openfootydata.svg?branch=master)](https://travis-ci.org/craiga/openfootydata)
+
 An API for Australian Football data.
 
 # Requirements
