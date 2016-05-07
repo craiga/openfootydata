@@ -2,11 +2,9 @@ import json
 import re
 from random import randint
 from urllib.parse import quote as urlencode
-from pprint import pprint
 
 from django.test import TestCase
 import dateutil.parser
-import pytz
 
 from models.models import Game
 from .helpers import create_game, create_season, create_league, create_venue, \
