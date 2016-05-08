@@ -33,6 +33,17 @@ class Team(models.Model):
         """String representation of a team."""
         return self.name
 
+class TeamAlternativeName(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.TextField()
+    team = models.ForeignKey(Team,
+                             on_delete=models.CASCADE,
+                             related_name='alternative_names')
+
+    def __str__(self):
+        """String representation of a team's alternative name."""
+        return '{} (alternative name of {})'.format(self.name, self.team.name)
+
 class Season(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
         validators.MinLengthValidator(1),

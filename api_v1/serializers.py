@@ -42,6 +42,10 @@ class TeamSerializer(ModelSerializer):
         view_name='api_v1:team_detail',
         lookup_url_kwarg='id'
     )
+    alternative_names = SlugRelatedField(many=True,
+                                         read_only=True,
+                                         slug_field='name')
+
     class Meta:
         model = models.Team
 
@@ -61,6 +65,23 @@ class TeamHyperlink(HyperlinkedRelatedField):
            'pk': view_kwargs['id']
         }
         return self.get_queryset().get(**lookup_kwargs)
+
+class TeamRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
+    def get_url(self, obj, view_name, request, format):
+        return self.reverse(view_name,
+                            kwargs={self.lookup_url_kwarg: obj.id,
+                                    'team_id': obj.team.id,
+                                    'league_id': obj.team.league.id},
+                            request=request,
+                            format=format)
+
+class TeamAlternativeNameSerializer(ModelSerializer):
+    url = TeamRelatedHyperlinkedIdentityField(
+        view_name='api_v1:team_alternative_name_detail',
+        lookup_url_kwarg='id')
+
+    class Meta:
+        model = models.TeamAlternativeName
 
 class SeasonSerializer(ModelSerializer):
     url = LeagueRelatedHyperlinkedIdentityField(

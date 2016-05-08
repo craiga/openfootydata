@@ -3,7 +3,11 @@ import json
 from django.test import TestCase
 
 from models.models import Team
-from .helpers import create_team, create_league, random_string, random_colour
+from .helpers import (create_team,
+                      create_team_alternative_name,
+                      create_league,
+                      random_string,
+                      random_colour)
 
 class TeamDetailTest(TestCase):
     def test_team_detail(self):
@@ -22,6 +26,19 @@ class TeamDetailTest(TestCase):
         url_regex = r'/v1/leagues/{}/teams/{}$'.format(team.league.id, team.id)
         self.assertRegex(data['url'], url_regex)
         self.assertEqual(data['league'], team.league.id)
+        self.assertEqual(set(data['alternative_names']),
+                         {n.name for n in team.alternative_names.all()})
+
+    def test_no_alternative_names(self):
+        """Test team detail where no alternative names exist."""
+        team = create_team(num_alternative_names=0)
+        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(data['id'], team.id)
+        self.assertEqual(data['alternative_names'], [])
 
     def test_no_such_team(self):
         """Test when no team exists."""
@@ -76,6 +93,8 @@ class TeamListTest(TestCase):
                                                            test_team.id)
             self.assertRegex(team['url'], url_regex)
             self.assertEqual(team['league'], test_team.league.id)
+            alt_names = {n.name for n in test_team.alternative_names.all()}
+            self.assertEqual(set(team['alternative_names']), alt_names)
         self.assertTrue(seen_team1)
         self.assertTrue(seen_team2)
 
@@ -102,6 +121,20 @@ class TeamListTest(TestCase):
                                                        team1.id)
         self.assertRegex(data['results'][0]['url'], url_regex)
         self.assertEqual(data['results'][0]['league'], team1.league.id)
+
+    def test_filter_teams_by_alternative_name(self):
+        """Get a list of teams filtered by an alternative name."""
+        league = create_league()
+        team1 = create_team(league, num_alternative_names=2)
+        team2 = create_team(league)
+        url = '/v1/leagues/{}/teams?alternative_names__name={}'.format(
+            league.id, team1.alternative_names.all()[0].name)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = json.loads(response.content.decode(response.charset))
+        self.assertEqual(len(data['results']), 1)
+        self.assertEqual(data['results'][0]['id'], team1.id)
 
     def test_no_teams_in_league(self):
         """Get a list of teams when none exist in the given league."""
@@ -147,6 +180,7 @@ class TeamCreateTest(TestCase):
                          post_data['tertiary_colour'])
         self.assertEqual(response_data['league'], league.id)
         self.assertRegex(response_data['url'], url_regex)
+        self.assertEqual(response_data['alternative_names'], [])
         team = Team.objects.get(pk=post_data['id'])
         self.assertEqual(team.id, post_data['id'])
         self.assertEqual(team.name, post_data['name'])
@@ -154,6 +188,7 @@ class TeamCreateTest(TestCase):
         self.assertEqual(team.secondary_colour, post_data['secondary_colour'])
         self.assertEqual(team.tertiary_colour, post_data['tertiary_colour'])
         self.assertEqual(team.league.id, league.id)
+        self.assertEqual(team.alternative_names.count(), 0)
 
     def test_no_colours(self):
         """Create a team without colours."""

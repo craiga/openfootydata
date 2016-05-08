@@ -42,9 +42,11 @@ def create_league():
     league.save()
     return league
 
-def create_team(league=None):
+def create_team(league=None, num_alternative_names=None):
     if league is None:
         league = create_league()
+    if num_alternative_names is None:
+        num_alternative_names = random.randint(1, 20)
     team = models.Team(id=random_string(),
                        league=league,
                        name=random_string(),
@@ -52,7 +54,16 @@ def create_team(league=None):
                        secondary_colour=random_colour(),
                        tertiary_colour=random_colour())
     team.save()
+    for i in range(0, num_alternative_names):
+        create_team_alternative_name(team=team)
     return team
+
+def create_team_alternative_name(team=None):
+    if team is None:
+        team = create_team()
+    alt_name = models.TeamAlternativeName(team=team, name=random_string())
+    alt_name.save()
+    return alt_name
 
 def create_season(league=None):
     if league is None:
