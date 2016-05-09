@@ -40,7 +40,8 @@ INSTALLED_APPS = (
     'models',
     'rest_framework',
     'colorful',
-    'api_v1'
+    'api_v1',
+    'django_nose'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -112,6 +113,12 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS':
         'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100,
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',
-                                'rest_framework.filters.OrderingFilter')
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=models,api_v1',
+]
