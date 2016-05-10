@@ -93,7 +93,12 @@ def create_venue_alternative_name(venue=None):
     alt_name.save()
     return alt_name
 
-def create_game(league=None, season=None, venue=None, team_1=None, team_2=None):
+def create_game(league=None,
+                season=None,
+                venue=None,
+                team_1=None,
+                team_2=None,
+                start=None):
     if league is None:
         league = create_league()
     if season is None:
@@ -104,8 +109,10 @@ def create_game(league=None, season=None, venue=None, team_1=None, team_2=None):
         team_1 = create_team(league=league)
     if team_2 is None:
         team_2 = create_team(league=league)
+    if start is None:
+        start = random_datetime()
     game = models.Game(season=season,
-                       start=random_datetime(),
+                       start=start,
                        venue=venue,
                        team_1=team_1,
                        team_1_goals=random.randint(0, 100),

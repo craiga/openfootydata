@@ -2,9 +2,11 @@ import json
 import re
 from random import randint
 from urllib.parse import quote as urlencode
+from datetime import datetime, timedelta
 
 from django.test import TestCase
 import dateutil.parser
+import pytz
 
 from models.models import Game
 from .helpers import create_game, create_season, create_league, create_venue, \
@@ -87,8 +89,11 @@ class GameListTest(TestCase):
         """Get a list of games."""
         league = create_league()
         season = create_season(league=league)
-        game1 = create_game(season=season, league=league)
-        game2 = create_game(season=season, league=league)
+        now = datetime.now(pytz.utc)
+        yesterday = now - timedelta(days=1)
+        tomorrow = now + timedelta(days=1)
+        game1 = create_game(season=season, league=league, start=tomorrow)
+        game2 = create_game(season=season, league=league, start=yesterday)
         game3 = create_game()
         game4 = create_game(league=league)
         if game1.start > game2.start:
