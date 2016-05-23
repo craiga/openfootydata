@@ -7,47 +7,53 @@ from models.models import VenueAlternativeName
 from .helpers import (create_venue_alternative_name,
                       create_venue,
                       random_string,
-                      DeleteTestCase)
+                      DeleteTestCase,
+                      GetTestCase)
 
-class VenueAlternativeNameDetailTest(TestCase):
+
+class VenueAlternativeNameTestCase:
+    """Base class for all venue alternative name tests."""
+
+    def assertVenueAlternativeName(self, json, alt_name):
+        """
+        Assert that the given parsed JSON data is the same as the given venue
+        alternative name.
+        """
+        self.assertEqual(json['id'], alt_name.id)
+        self.assertEqual(json['name'], alt_name.name)
+        self.assertVenueAlternativeNameUrl(json['url'], alt_name)
+        self.assertEqual(json['venue'], alt_name.venue.id)
+
+    def assertVenueAlternativeNameUrl(self, url, alt_name):
+        """
+        Assert that the given URL relates to the given venue alternative
+        name.
+        """
+        url_regex = '/v1/venues/{}/alternative_names/{}$'.format(
+            alt_name.venue.id, alt_name.id)
+        self.assertRegex(url, url_regex)
+
+
+class VenueAlternativeNameDetailTest(GetTestCase, VenueAlternativeNameTestCase):
     def test_alt_name_detail(self):
         """Get alternative name detail."""
-        alternative_name = create_venue_alternative_name()
-        url = '/v1/venues/{}/alternative_names/{}'.format(
-            alternative_name.venue.id, alternative_name.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], alternative_name.id)
-        self.assertEqual(data['name'], alternative_name.name)
-        url_regex = r'/v1/venues/{}/alternative_names/{}$'.format(
-            alternative_name.venue.id, alternative_name.id)
-        self.assertRegex(data['url'], url_regex)
-        self.assertEqual(data['venue'], alternative_name.venue.id)
+        alt_name = create_venue_alternative_name()
+        self.assertSuccess('venues', alt_name.venue.id,
+                           'alternative_names', alt_name.id)
+        json = self.assertJson()
+        self.assertVenueAlternativeName(json, alt_name)
 
     def test_no_such_alternative_name(self):
         """Test when no alternative_name exists."""
-        venue = create_venue()
-        url = '/v1/venues/{}/alternative_names/none'.format(venue.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        alt_name = create_venue_alternative_name()
+        other_venue = create_venue()
+        self.assertNotFound('venues', alt_name.venue.id,
+                            'alternative_names', 'no_such_alt_name')
+        self.assertNotFound('venues', 'no_such_venue',
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('venues', other_venue.id,
+                            'alternative_names', alt_name.id)
 
-    def test_no_such_venue(self):
-        """Test when no venue exists."""
-        alternative_name = create_venue_alternative_name()
-        url = '/v1/venues/none/alternative_names/{}'.format(alternative_name.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_alt_name_not_in_venue(self):
-        """Test when alternative name not in venue."""
-        venue = create_venue()
-        alternative_name = create_venue_alternative_name()
-        url = '/v1/venues/{}/alternative_names/{}'.format(venue.id,
-                                                          alternative_name.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
 
 class AlternativeNameListTest(TestCase):
     def test_list_alternative_names(self):

@@ -2,8 +2,9 @@ import random
 import string
 import datetime
 from decimal import Decimal
+import json
 
-from django.test import TestCase
+from django.test import TestCase as DjangoTestCase
 
 from models import models
 
@@ -131,21 +132,52 @@ def normalise_path(path):
     return '/v1/' + '/'.join(str(x) for x in path)
 
 
-class DeleteTestCase(TestCase):
-    """Base for API v1 deletion tests."""
-    def assertStatusCode(self, path, status_code):
+class TestCase(DjangoTestCase):
+    """Base for API v1 tests."""
+    def send_request(self, *args, **kwargs):
+        return self.client.get(*args, **kwargs)
+
+    def assertStatusCode(self, status_code, path=None):
         """
         Assert that a delete request responds with the expected status code
         with the given URL parts.
         """
-        path = normalise_path(path)
-        response = self.client.delete(path)
-        self.assertEqual(response.status_code, status_code)
+        if path:
+            self.response = self.send_request(normalise_path(path))
+        self.assertEqual(self.response.status_code, status_code)
 
-    def assertSuccess(self, *args):
+    def assertContentType(self, content_type, path=None):
+        if path:
+            self.response = self.send_request(normalise_path(path))
+        self.assertEqual(self.response['Content-Type'], content_type)
+
+    def assertSuccess(self, *args, **kwargs):
         """Assert that a delete request is successful."""
-        self.assertStatusCode(args, 204)
+        self.assertStatusCode(200, args)
 
-    def assertNotFound(self, *args):
+    def assertNotFound(self, *args, **kwargs):
         """Assert that a delete request results in a 404 response."""
-        self.assertStatusCode(args, 404)
+        self.assertStatusCode(404, args)
+
+    def assertJson(self, *args, **kwargs):
+        """
+        Assert that the response is JSON, returning the parsed data if
+        successful.
+        """
+        self.assertContentType('application/json', args)
+        return json.loads(self.response.content.decode(self.response.charset))
+
+
+class GetTestCase(TestCase):
+    """Base for API v1 get tests."""
+    pass
+
+
+class DeleteTestCase(TestCase):
+    """Base for API v1 deletion tests."""
+    def send_request(self, *args, **kwargs):
+        return self.client.delete(*args, **kwargs)
+
+    def assertSuccess(self, *args, **kwargs):
+        """Assert that a delete request is successful."""
+        self.assertStatusCode(204, args)

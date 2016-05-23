@@ -3,26 +3,44 @@ import json
 from django.test import TestCase
 
 from models.models import League
-from .helpers import create_league, random_string, DeleteTestCase
+from .helpers import create_league, random_string, DeleteTestCase, GetTestCase
 
-class LeagueDetailTest(TestCase):
+
+class LeagueTestCase:
+    """Base class for all league tests."""
+
+    def assertLeague(self, json, league):
+        """
+        Assert that the given parsed league JSON data is the same as the given
+        league.
+        """
+        self.assertEqual(json['id'], league.id)
+        self.assertEqual(json['name'], league.name)
+        self.assertLeagueUrl(json['url'], league)
+        self.assertSeasonsUrl(json['seasons'], league)
+
+    def assertLeagueUrl(self, url, league):
+        """Assert that the given URL relates to the given league."""
+        self.assertRegex(url, '/v1/leagues/{}$'.format(league.id))
+
+    def assertSeasonsUrl(self, url, league):
+        """
+        Assert that the given URL relates to the seasons in the given league.
+        """
+        self.assertRegex(url, '/v1/leagues/{}/seasons$'.format(league.id))
+
+
+class LeagueDetailTest(GetTestCase, LeagueTestCase):
     def test_league_detail(self):
         """Get league detail."""
         league = create_league()
-        response = self.client.get('/v1/leagues/{}'.format(league.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], league.id)
-        self.assertEqual(data['name'], league.name)
-        self.assertRegex(data['url'], '/v1/leagues/{}$'.format(league.id))
-        self.assertRegex(data['seasons'],
-                         '/v1/leagues/{}/seasons$'.format(league.id))
+        self.assertSuccess('leagues', league.id)
+        json = self.assertJson()
+        self.assertLeague(json, league)
 
     def test_no_such_league(self):
         """Test when no league exists."""
-        response = self.client.get('/v1/leagues/no_such_league')
-        self.assertEqual(response.status_code, 404)
+        self.assertNotFound('leagues', 'no_such_league')
 
 class LeagueListTest(TestCase):
     def test_list_leagues(self):

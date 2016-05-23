@@ -8,53 +8,62 @@ from .helpers import (create_team_alternative_name,
                       create_league,
                       create_team,
                       random_string,
-                      DeleteTestCase)
+                      DeleteTestCase,
+                      GetTestCase)
 
-class TeamAlternativeNameDetailTest(TestCase):
+class TeamAlternativeNameTestCase:
+    """Base class for all team alternative name tests."""
+
+    def assertTeamAlternativeName(self, json, alt_name):
+        """
+        Assert that the given parsed JSON data is the same as the given team
+        alternative name.
+        """
+        self.assertEqual(json['id'], alt_name.id)
+        self.assertEqual(json['name'], alt_name.name)
+        self.assertTeamAlternativeNameUrl(json['url'], alt_name)
+        self.assertEqual(json['team'], alt_name.team.id)
+
+    def assertTeamAlternativeNameUrl(self, url, alt_name):
+        """
+        Assert that the given URL relates to the given team alternative name.
+        """
+        url_regex = '/v1/leagues/{}/teams/{}/alternative_names/{}$'.format(
+            alt_name.team.league.id, alt_name.team.id, alt_name.id)
+        self.assertRegex(url, url_regex)
+
+
+class TeamAlternativeNameDetailTest(GetTestCase, TeamAlternativeNameTestCase):
     def test_alt_name_detail(self):
         """Get alternative name detail."""
-        alternative_name = create_team_alternative_name()
-        url = '/v1/leagues/{}/teams/{}/alternative_names/{}'.format(
-            alternative_name.team.league.id,
-            alternative_name.team.id,
-            alternative_name.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], alternative_name.id)
-        self.assertEqual(data['name'], alternative_name.name)
-        url_regex = r'/v1/leagues/{}/teams/{}/alternative_names/{}$'.format(
-            alternative_name.team.league.id,
-            alternative_name.team.id,
-            alternative_name.id)
-        self.assertRegex(data['url'], url_regex)
-        self.assertEqual(data['team'], alternative_name.team.id)
+        alt_name = create_team_alternative_name()
+        self.assertSuccess('leagues', alt_name.team.league.id,
+                           'teams', alt_name.team.id,
+                           'alternative_names', alt_name.id)
+        json = self.assertJson()
+        self.assertTeamAlternativeName(json, alt_name)
 
     def test_no_such_alternative_name(self):
         """Test when no alternative_name exists."""
-        team = create_team()
-        url = '/v1/leagues/{}/teams/{}/alternative_names/none'.format(
-            team.league.id, team.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        alt_name = create_team_alternative_name()
+        other_team = create_team()
+        other_league = create_league()
+        self.assertNotFound('leagues', alt_name.team.league.id,
+                            'teams', alt_name.team.id,
+                            'alternative_names', 'no_such_alt_name')
+        self.assertNotFound('leagues', alt_name.team.league.id,
+                            'teams', 'no_such_team',
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('leagues', 'no_such_league',
+                            'teams', alt_name.team.id,
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('leagues', alt_name.team.league.id,
+                            'teams', other_team.id,
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('leagues', other_league.id,
+                            'teams', alt_name.team.id,
+                            'alternative_names', alt_name.id)
 
-    def test_no_such_team(self):
-        """Test when no team exists."""
-        alternative_name = create_team_alternative_name()
-        url = '/v1/leagues/{}/teams/none/alternative_names/{}'.format(
-            alternative_name.team.league.id, alternative_name.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_alt_name_not_in_team(self):
-        """Test when alternative name not in team."""
-        team = create_team()
-        alternative_name = create_team_alternative_name()
-        url = '/v1/leagues/{}/teams/{}/alternative_names/{}'.format(
-            team.league.id, team.id, alternative_name.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
 
 class AlternativeNameListTest(TestCase):
     def test_list_alternative_names(self):

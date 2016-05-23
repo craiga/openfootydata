@@ -8,39 +8,44 @@ from .helpers import (create_venue,
                       create_venue_alternative_name,
                       random_string,
                       random_decimal,
-                      DeleteTestCase)
+                      DeleteTestCase,
+                      GetTestCase)
 
-class VenueDetailTest(TestCase):
-    def test_venue_detail(self):
-        """Get venue detail."""
-        venue = create_venue()
-        response = self.client.get('/v1/venues/{}'.format(venue.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], venue.id)
-        self.assertEqual(data['name'], venue.name)
-        self.assertEqual(Decimal(data['latitude']), venue.latitude)
-        self.assertEqual(Decimal(data['longitude']), venue.longitude)
-        self.assertEqual(data['timezone'], venue.timezone)
-        self.assertRegex(data['url'], '/v1/venues/{}$'.format(venue.id))
-        self.assertEqual(set(data['alternative_names']),
+
+class VenueTestCase(TestCase):
+    """Base class for venue tests."""
+
+    def assertVenue(self, json, venue):
+        """
+        Assert that the given parsed venue JSON data is the same as the given
+        venue.
+        """
+        self.assertEqual(json['id'], venue.id)
+        self.assertEqual(json['name'], venue.name)
+        self.assertEqual(Decimal(json['latitude']), venue.latitude)
+        self.assertEqual(Decimal(json['longitude']), venue.longitude)
+        self.assertEqual(json['timezone'], venue.timezone)
+        self.assertVenueUrl(json['url'], venue)
+        self.assertEqual(set(json['alternative_names']),
                          {n.name for n in venue.alternative_names.all()})
 
-    def test_no_alternative_names(self):
-        """Get venue details with no alternative names."""
-        venue = create_venue(num_alternative_names=0)
-        response = self.client.get('/v1/venues/{}'.format(venue.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], venue.id)
-        self.assertEqual(data['alternative_names'], [])
+    def assertVenueUrl(self, url, venue):
+        """Assert that the given URL relates to the given venue."""
+        self.assertRegex(url, '/v1/venues/{}$'.format(venue.id))
+
+class VenueDetailTest(GetTestCase, VenueTestCase):
+    def test_venue_detail(self):
+        """Get venue detail."""
+        venues = (create_venue(), create_venue(num_alternative_names=0))
+        for venue in venues:
+            self.assertSuccess('venues', venue.id)
+            json = self.assertJson()
+            self.assertVenue(json, venue)
 
     def test_no_such_venue(self):
         """Test when no venue exists."""
-        response = self.client.get('/v1/venues/no_such_venue')
-        self.assertEqual(response.status_code, 404)
+        self.assertNotFound('venues', 'no_such_venue')
+
 
 class VenueListTest(TestCase):
     def test_list_venues(self):

@@ -16,79 +16,71 @@ from .helpers import (create_game,
                       create_team,
                       random_string,
                       random_datetime,
+                      GetTestCase,
                       DeleteTestCase)
+from .test_team import TeamTestCase
+from .test_venue import VenueTestCase
 
-class GameDetailTest(TestCase):
+
+class GameTestCase(TeamTestCase, VenueTestCase):
+    """Base class for all game tests."""
+
+    def assertGame(self, json, game):
+        """
+        Assert that the given parse game JSON data is the same as the given
+        game.
+        """
+        self.assertEqual(json['id'], game.id)
+        self.assertGameUrl(json['url'], game)
+        self.assertEqual(dateutil.parser.parse(json['start']),
+                         game.start)
+        self.assertVenueUrl(json['venue'], game.venue)
+        self.assertTeamUrl(json['team_1'], game.team_1)
+        self.assertEqual(json['team_1_score'], game.team_1_score)
+        self.assertEqual(json['team_1_goals'], game.team_1_goals)
+        self.assertEqual(json['team_1_behinds'], game.team_1_behinds)
+        self.assertTeamUrl(json['team_2'], game.team_2)
+        self.assertEqual(json['team_2_score'], game.team_2_score)
+        self.assertEqual(json['team_2_goals'], game.team_2_goals)
+        self.assertEqual(json['team_2_behinds'], game.team_2_behinds)
+
+    def assertGameUrl(self, url, game):
+        """Assert that the given URL relates to the given game."""
+        url_regex = '/v1/leagues/{}/seasons/{}/games/{}$'.format(
+            game.season.league.id, game.season.id, game.id)
+        self.assertRegex(url, url_regex)
+
+
+class GameDetailTest(GetTestCase, GameTestCase):
     def test_game_detail(self):
-        """Get game detail."""
+        """Test getting game detail."""
         game = create_game()
-        url = '/v1/leagues/{}/seasons/{}/games/{}'.format(game.season.league.id,
-                                                         game.season.id,
-                                                         game.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], game.id)
-        self.assertEqual(dateutil.parser.parse(data['start']), game.start)
-        self.assertRegex(data['venue'], '/v1/venues/{}$'.format(game.venue.id))
-        team_1_regex = '/v1/leagues/{}/teams/{}$'.format(game.season.league.id,
-                                                       game.team_1.id)
-        self.assertRegex(data['team_1'], team_1_regex)
-        self.assertEqual(data['team_1_score'], game.team_1_score)
-        self.assertEqual(data['team_1_goals'], game.team_1_goals)
-        self.assertEqual(data['team_1_behinds'], game.team_1_behinds)
-        team_2_regex = '/v1/leagues/{}/teams/{}$'.format(game.season.league.id,
-                                                       game.team_2.id)
-        self.assertRegex(data['team_2'], team_2_regex)
-        self.assertEqual(data['team_2_score'], game.team_2_score)
-        self.assertEqual(data['team_2_goals'], game.team_2_goals)
-        self.assertEqual(data['team_2_behinds'], game.team_2_behinds)
+        self.assertSuccess('leagues', game.season.league.id,
+                           'seasons', game.season.id,
+                           'games', game.id)
+        json = self.assertJson()
+        self.assertGame(json, game)
 
     def test_no_such_game(self):
         """Test when no game exists."""
-        season = create_season()
-        url = '/v1/leagues/{}/seasons/{}/games/nogame'.format(season.league.id,
-                                                              season.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_season(self):
-        """Test when no season exists."""
         game = create_game()
-        game.save()
-        url = '/v1/leagues/{}/seasons/no-such-season/games/{}'.format(
-            game.season.league.id, game.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_game_not_in_season(self):
-        """Test when game not in season."""
-        season = create_season()
-        game = create_game()
-        url = '/v1/leagues/{}/seasons/{}/games/{}'.format(game.season.league.id,
-                                                          season.id,
-                                                          game.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_league(self):
-        """Test when no league exists."""
-        game = create_game()
-        url = '/v1/leagues/no-such-league/seasons/{}/games/{}'.format(
-            game.season.id, game.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_game_not_in_league(self):
-        """Test when game not in league."""
-        league = create_league()
-        game = create_game()
-        url = '/v1/leagues/{}/seasons/{}/games/{}'.format(league.id,
-                                                          game.season.id,
-                                                          game.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        other_season = create_season()
+        other_league = create_league()
+        self.assertNotFound('leagues', game.season.league.id,
+                            'seasons', game.season.id,
+                            'games', 'no_such_game')
+        self.assertNotFound('leagues', game.season.league.id,
+                            'seasons', 'no_such_season',
+                            'games', game.id)
+        self.assertNotFound('leagues', 'no_such_league',
+                            'seasons', game.season.id,
+                            'games', game.id)
+        self.assertNotFound('leagues', game.season.league.id,
+                            'seasons', other_season.id,
+                            'games', game.id)
+        self.assertNotFound('leagues', other_league.id,
+                            'seasons', game.season.id,
+                            'games', game.id)
 
 class GameListTest(TestCase):
     def test_list_games(self):
@@ -900,3 +892,4 @@ class GameDeleteTest(DeleteTestCase):
         self.assertNotFound('leagues', other_league.id,
                             'seasons', game.season.id,
                             'games', game.id)
+

@@ -3,48 +3,56 @@ import json
 from django.test import TestCase
 
 from models.models import Season
-from .helpers import create_season, create_league, random_string, DeleteTestCase
+from .helpers import (create_season,
+                      create_league,
+                      random_string,
+                      DeleteTestCase,
+                      GetTestCase)
 
-class SeasonDetailTest(TestCase):
+
+class SeasonTestCase:
+    """Base class for all season tests."""
+
+    def assertSeason(self, json, season):
+        """
+        Assert that the given parse season JSON data is the same as the given
+        season.
+        """
+        self.assertEqual(json['id'], season.id)
+        self.assertEqual(json['name'], season.name)
+        self.assertSeasonUrl(json['url'], season)
+        self.assertGamesUrl(json['games'], season)
+        self.assertEqual(json['league'], season.league.id)
+
+    def assertSeasonUrl(self, url, season):
+        """Assert that the given URL relates to the given season."""
+        url_regex = '/v1/leagues/{}/seasons/{}$'.format(season.league.id,
+                                                        season.id)
+        self.assertRegex(url, url_regex)
+
+    def assertGamesUrl(self, url, season):
+        """Assert that the given URL relates to games in the given season."""
+        url_regex = '/v1/leagues/{}/seasons/{}/games$'.format(season.league.id,
+                                                              season.id)
+        self.assertRegex(url, url_regex)
+
+
+class SeasonDetailTest(GetTestCase, SeasonTestCase):
     def test_season_detail(self):
         """Get season detail."""
         season = create_season()
-        url = '/v1/leagues/{}/seasons/{}'.format(season.league.id, season.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], season.id)
-        self.assertEqual(data['name'], season.name)
-        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(season.league.id,
-                                                         season.id)
-        self.assertRegex(data['url'], url_regex)
-        url_regex = r'/v1/leagues/{}/seasons/{}/games$'.format(season.league.id,
-                                                               season.id)
-        self.assertRegex(data['games'], url_regex)
-        self.assertEqual(data['league'], season.league.id)
+        self.assertSuccess('leagues', season.league.id, 'seasons', season.id)
+        json = self.assertJson()
+        self.assertSeason(json, season)
 
     def test_no_such_season(self):
         """Test when no season exists."""
-        league = create_league()
-        url = '/v1/leagues/{}/seasons/no-such-season'.format(league.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_league(self):
-        """Test when no league exists."""
         season = create_season()
-        url = '/v1/leagues/no-such-league/seasons/{}'.format(season.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        other_league = create_league()
+        self.assertNotFound('leagues', season.league.id, 'seasons', 'no_season')
+        self.assertNotFound('leagues', 'no_such_league', 'seasons', season.id)
+        self.assertNotFound('leagues', other_league.id, 'seasons', season.id)
 
-    def test_season_not_in_league(self):
-        """Test when season not in league."""
-        league = create_league()
-        season = create_season()
-        url = '/v1/leagues/{}/seasons/{}'.format(league.id, season.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
 
 class SeasonListTest(TestCase):
     def test_list_seasons(self):

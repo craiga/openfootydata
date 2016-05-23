@@ -8,60 +8,54 @@ from .helpers import (create_team,
                       create_league,
                       random_string,
                       random_colour,
-                      DeleteTestCase)
+                      DeleteTestCase,
+                      GetTestCase)
 
-class TeamDetailTest(TestCase):
-    def test_team_detail(self):
-        """Get team detail."""
-        team = create_team()
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], team.id)
-        self.assertEqual(data['name'], team.name)
-        self.assertEqual(data['primary_colour'], team.primary_colour)
-        self.assertEqual(data['secondary_colour'], team.secondary_colour)
-        self.assertEqual(data['tertiary_colour'], team.tertiary_colour)
-        url_regex = r'/v1/leagues/{}/teams/{}$'.format(team.league.id, team.id)
-        self.assertRegex(data['url'], url_regex)
-        self.assertEqual(data['league'], team.league.id)
-        self.assertEqual(set(data['alternative_names']),
+class TeamTestCase(TestCase):
+    """Base class for team tests."""
+
+    def assertTeam(self, json, team):
+        """
+        Assert that the given parsed team JSON data is the same as the given
+        team.
+        """
+        self.assertEqual(json['id'], team.id)
+        self.assertEqual(json['name'], team.name)
+        self.assertEqual(json['primary_colour'], team.primary_colour)
+        self.assertEqual(json['secondary_colour'], team.secondary_colour)
+        self.assertEqual(json['tertiary_colour'], team.tertiary_colour)
+        self.assertTeamUrl(json['url'], team)
+        self.assertEqual(json['league'], team.league.id)
+        self.assertEqual(set(json['alternative_names']),
                          {n.name for n in team.alternative_names.all()})
 
-    def test_no_alternative_names(self):
-        """Test team detail where no alternative names exist."""
-        team = create_team(num_alternative_names=0)
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(data['id'], team.id)
-        self.assertEqual(data['alternative_names'], [])
+    def assertTeamUrl(self, url, team):
+        """Assert that the given URL relates to the given team."""
+        url_regex = '/v1/leagues/{}/teams/{}$'.format(team.league.id, team.id)
+        self.assertRegex(url, url_regex)
+
+
+class TeamDetailTest(GetTestCase, TeamTestCase):
+    def test_team_detail(self):
+        """Get team detail."""
+        teams = (create_team(), create_team(num_alternative_names=0))
+        for team in teams:
+            self.assertSuccess('leagues', team.league.id,
+                               'teams', team.id)
+            json = self.assertJson()
+            self.assertTeam(json, team)
 
     def test_no_such_team(self):
         """Test when no team exists."""
-        league = create_league()
-        url = '/v1/leagues/{}/teams/no-such-team'.format(league.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_league(self):
-        """Test when no league exists."""
         team = create_team()
-        url = '/v1/leagues/no-such-league/teams/{}'.format(team.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        other_league = create_league()
+        self.assertNotFound('leagues', team.league.id,
+                            'teams', 'no_such_team')
+        self.assertNotFound('leagues', 'no_such_league',
+                            'teams', team.id)
+        self.assertNotFound('leagues', other_league.id,
+                            'teams', team.id)
 
-    def test_team_not_in_league(self):
-        """Test when team not in league."""
-        league = create_league()
-        team = create_team()
-        url = '/v1/leagues/{}/teams/{}'.format(league.id, team.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
 
 class TeamListTest(TestCase):
     def test_list_teams(self):
@@ -450,3 +444,4 @@ class TeamDeleteTest(DeleteTestCase):
         self.assertNotFound('leagues', team.league.id, 'teams', 'no_such_team')
         self.assertNotFound('leagues', 'no_such_league', 'teams', team.id)
         self.assertNotFound('leagues', other_league.id, 'teams', team.id)
+
