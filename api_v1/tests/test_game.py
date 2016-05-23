@@ -151,8 +151,8 @@ class GameListTest(TestCase):
             game2.season.league.id, game2.season.id, game2.id)
         self.assertRegex(data['results'][1]['url'], url_regex)
 
-    def test_filter_by_team_1(self):
-        """Test filtering by team 1."""
+    def test_filter_by_team(self):
+        """Test filtering by team."""
         league = create_league()
         season = create_season(league=league)
         game1 = create_game(season=season, league=league)
@@ -166,15 +166,6 @@ class GameListTest(TestCase):
         data = json.loads(response.content.decode(response.charset))
         self.assertEqual(len(data['results']), 1)
         self.assertEqual(data['results'][0]['id'], game1.id)
-
-    def test_filter_by_team_2(self):
-        """Test filtering by team 2."""
-        league = create_league()
-        season = create_season(league=league)
-        game1 = create_game(season=season, league=league)
-        game2 = create_game(season=season, league=league)
-        game3 = create_game(team_2=game1.team_2)
-        game4 = create_game(league=league)
         response = self.client.get('/v1/leagues/{}/seasons/{}/games?team_2={}'\
             .format(league.id, season.id, game1.team_2.id))
         self.assertEqual(response.status_code, 200)
