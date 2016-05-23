@@ -449,4 +449,4 @@ class TeamDeleteTest(DeleteTestCase):
         self.assertSuccess('leagues', team.league.id, 'teams', team.id)
         self.assertNotFound('leagues', team.league.id, 'teams', 'no_such_team')
         self.assertNotFound('leagues', 'no_such_league', 'teams', team.id)
-        self.assertSuccess('leagues', other_league.id, 'teams', team.id)
+        self.assertNotFound('leagues', other_league.id, 'teams', team.id)
