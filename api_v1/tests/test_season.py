@@ -24,6 +24,18 @@ class SeasonTestCase:
         self.assertGamesUrl(json['games'], season)
         self.assertEqual(json['league'], season.league.id)
 
+    def assertSeasons(self, json, seasons):
+        """
+        Assert that the given list of parsed season JSON data is the same as
+        the given list of seasons.
+        """
+        self.assertEqual(len(json), len(seasons))
+        seasons = {season.id:season for season in seasons}
+        for json_item in json:
+            self.assertSeason(json_item, seasons[json_item['id']])
+            del seasons[json_item['id']]
+        self.assertEqual(0, len(seasons))
+
     def assertSeasonUrl(self, url, season):
         """Assert that the given URL relates to the given season."""
         url_regex = '/v1/leagues/{}/seasons/{}$'.format(season.league.id,
@@ -54,76 +66,36 @@ class SeasonDetailTest(GetTestCase, SeasonTestCase):
         self.assertNotFound('leagues', other_league.id, 'seasons', season.id)
 
 
-class SeasonListTest(TestCase):
+class SeasonListTest(GetTestCase, SeasonTestCase):
     def test_list_seasons(self):
         """Get a list of seasons."""
         league = create_league()
-        season1 = create_season(league)
-        season2 = create_season(league)
-        season3 = create_season()
-        response = self.client.get('/v1/leagues/{}/seasons'.format(league.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 2)
-        seen_season1 = False
-        seen_season2 = False
-        for season in data['results']:
-            if season['id'] == season1.id:
-                seen_season1 = True
-                test_season = season1
-            else:
-                seen_season2 = True
-                test_season = season2
-            self.assertEqual(season['id'], test_season.id)
-            self.assertEqual(season['name'], test_season.name)
-            url_regex = r'/v1/leagues/{}/seasons/{}$'.format(
-                test_season.league.id, test_season.id)
-            self.assertRegex(season['url'], url_regex)
-            url_regex = r'/v1/leagues/{}/seasons/{}/games$'.format(
-                test_season.league.id, test_season.id)
-            self.assertRegex(season['games'], url_regex)
-            self.assertEqual(season['league'], test_season.league.id)
-        self.assertTrue(seen_season1)
-        self.assertTrue(seen_season2)
+        seasons_in_league = (create_season(league), create_season(league))
+        season_outside_of_league = create_season()
+        self.assertSuccess('leagues', league.id, 'seasons')
+        json = self.assertJson()
+        self.assertSeasons(json['results'], seasons_in_league)
 
     def test_filter_seasons(self):
         """Get a list of seasons filtered by name."""
         league = create_league()
-        season1 = create_season(league)
-        season2 = create_season(league)
-        season3 = create_season()
-        response = self.client.get('/v1/leagues/{}/seasons?name={}'.format(
-            league.id, season1.name))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 1)
-        self.assertEqual(data['results'][0]['id'], season1.id)
-        self.assertEqual(data['results'][0]['name'], season1.name)
-        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(league.id, season1.id)
-        self.assertRegex(data['results'][0]['url'], url_regex)
-        url_regex = r'/v1/leagues/{}/seasons/{}/games$'.format(league.id,
-                                                               season1.id)
-        self.assertRegex(data['results'][0]['games'], url_regex)
-        self.assertEqual(data['results'][0]['league'], season1.league.id)
+        seasons = (create_season(league), create_season(league))
+        for season in seasons:
+            self.assertSuccess('leagues', league.id,
+                               'seasons?name=' + season.name)
+            json = self.assertJson()
+            self.assertSeasons(json['results'], (season,))
 
     def test_no_seasons_in_league(self):
         """Get a list of seasons when none exist in the given league."""
-        league1 = create_league()
-        season1 = create_season(league1)
-        season2 = create_season(league1)
-        league2 = create_league()
-        response = self.client.get('/v1/leagues/{}/seasons'.format(league2.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 0)
+        league = create_league()
+        self.assertSuccess('leagues', league.id, 'seasons')
+        json = self.assertJson()
+        self.assertEqual(len(json['results']), 0)
 
     def test_no_such_league(self):
         """Test when no matching league exists."""
-        response = self.client.get('/v1/leagues/no_such_league/seasons')
-        self.assertEqual(response.status_code, 404)
+        self.assertNotFound('leagues', 'no_such_league', 'seasons')
 
 class SeasonCreateTest(TestCase):
     def test_create_season(self):

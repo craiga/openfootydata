@@ -24,6 +24,19 @@ class VenueAlternativeNameTestCase:
         self.assertVenueAlternativeNameUrl(json['url'], alt_name)
         self.assertEqual(json['venue'], alt_name.venue.id)
 
+    def assertVenueAlternativeNames(self, json, alt_names):
+        """
+        Assert that the given list of parsed JSON data is the same as the given
+        list of alternative names.
+        """
+        self.assertEqual(len(json), len(alt_names))
+        alt_names = {alt_name.id:alt_name for alt_name in alt_names}
+        for json_item in json:
+            self.assertVenueAlternativeName(json_item,
+                                           alt_names[json_item['id']])
+            del alt_names[json_item['id']]
+        self.assertEqual(0, len(alt_names))
+
     def assertVenueAlternativeNameUrl(self, url, alt_name):
         """
         Assert that the given URL relates to the given venue alternative
@@ -55,54 +68,30 @@ class VenueAlternativeNameDetailTest(GetTestCase, VenueAlternativeNameTestCase):
                             'alternative_names', alt_name.id)
 
 
-class AlternativeNameListTest(TestCase):
+class AlternativeNameListTest(GetTestCase, VenueAlternativeNameTestCase):
     def test_list_alternative_names(self):
         """Get a list of alternative_names."""
         venue = create_venue(num_alternative_names=0)
-        alt_name_1 = create_venue_alternative_name(venue)
-        alt_name_2 = create_venue_alternative_name(venue)
-        alt_name_3 = create_venue_alternative_name()
-        response = self.client.get('/v1/venues/{}/alternative_names'.format(
-            venue.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 2)
-        seen_alt_name_1 = False
-        seen_alt_name_2 = False
-        for alt_name in data['results']:
-            if alt_name['id'] == alt_name_1.id:
-                seen_alt_name_1 = True
-                test_alt_name = alt_name_1
-            else:
-                seen_alt_name_2 = True
-                test_alt_name = alt_name_2
-            self.assertEqual(alt_name['id'], test_alt_name.id)
-            self.assertEqual(alt_name['name'], test_alt_name.name)
-            url_regex = r'/v1/venues/{}/alternative_names/{}$'.format(
-                test_alt_name.venue.id, test_alt_name.id)
-            self.assertRegex(alt_name['url'], url_regex)
-            self.assertEqual(alt_name['venue'], test_alt_name.venue.id)
-        self.assertTrue(seen_alt_name_1)
-        self.assertTrue(seen_alt_name_2)
+        alt_names = (create_venue_alternative_name(venue),
+                     create_venue_alternative_name(venue))
+        other_venue_alt_name = create_venue_alternative_name()
+        self.assertSuccess('venues', venue.id, 'alternative_names')
+        json = self.assertJson()
+        self.assertVenueAlternativeNames(json['results'], alt_names)
 
     def test_no_alternative_names_in_venue(self):
-        """Get a list of alternative names when none exist in the given
-        venue.
         """
-        venue1 = create_venue()
-        venue2 = create_venue(num_alternative_names=0)
-        response = self.client.get('/v1/venues/{}/alternative_names'.format(
-            venue2.id))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 0)
+        Get a list of alternative names when none exist in the given venue.
+        """
+        venue = create_venue(num_alternative_names=0)
+        other_venue_alt_name = create_venue_alternative_name()
+        self.assertSuccess('venues', venue.id, 'alternative_names')
+        json = self.assertJson()
+        self.assertEqual(len(json['results']), 0)
 
     def test_no_such_venue(self):
         """Test when no matching venue exists."""
-        response = self.client.get('/v1/venues/no_such_venue/alternative_names')
-        self.assertEqual(response.status_code, 404)
+        self.assertNotFound('venues', 'no_such_venue', 'alternative_names')
 
 class AlternativeNameCreateTest(TestCase):
     def test_create_venue_alternative_name(self):

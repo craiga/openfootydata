@@ -29,6 +29,19 @@ class VenueTestCase(TestCase):
         self.assertEqual(set(json['alternative_names']),
                          {n.name for n in venue.alternative_names.all()})
 
+    def assertVenues(self, json, venues):
+        """
+        Assert that the given list of parsed venue JSON data is the same as
+        the given list of venues.
+        """
+        self.assertEqual(len(json), len(venues))
+        venues = {venue.id:venue for venue in venues}
+        for json_item in json:
+            self.assertVenue(json_item, venues[json_item['id']])
+            del venues[json_item['id']]
+        self.assertEqual(0, len(venues))
+
+
     def assertVenueUrl(self, url, venue):
         """Assert that the given URL relates to the given venue."""
         self.assertRegex(url, '/v1/venues/{}$'.format(venue.id))
@@ -47,62 +60,33 @@ class VenueDetailTest(GetTestCase, VenueTestCase):
         self.assertNotFound('venues', 'no_such_venue')
 
 
-class VenueListTest(TestCase):
+class VenueListTest(GetTestCase, VenueTestCase):
     def test_list_venues(self):
         """Get a list of venues."""
-        venue_1 = create_venue()
-        venue_2 = create_venue()
-        response = self.client.get('/v1/venues')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 2)
-        seen_venue_1 = False
-        seen_venue_2 = False
-        for venue in data['results']:
-            if venue['id'] == venue_1.id:
-                seen_venue_1 = True
-            else:
-                seen_venue_2 = True
-        self.assertTrue(seen_venue_1)
-        self.assertTrue(seen_venue_2)
+        venues = (create_venue(), create_venue())
+        self.assertSuccess('venues')
+        json = self.assertJson()
+        self.assertVenues(json['results'], venues)
 
     def test_filter_venues(self):
         """Get a list of venues filtered by name."""
-        venue_1 = create_venue()
-        venue_2 = create_venue()
-        response = self.client.get('/v1/venues?name=' + venue_1.name)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 1)
-        self.assertEqual(data['results'][0]['id'], venue_1.id)
-        response = self.client.get('/v1/venues?name=' + venue_2.name)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 1)
-        self.assertEqual(data['results'][0]['id'], venue_2.id)
-
-    def test_filter_venues_by_alternative_name(self):
-        """Get a list of venues filtered by an alternative name."""
-        venue_1 = create_venue(num_alternative_names=2)
-        venue_2 = create_venue()
-        response = self.client.get('/v1/venues?alternative_names__name=' \
-            + venue_1.alternative_names.all()[0].name)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 1)
-        self.assertEqual(data['results'][0]['id'], venue_1.id)
+        venues = (create_venue(), create_venue())
+        for venue in venues:
+            self.assertSuccess('venues?name=' + venue.name)
+            json = self.assertJson()
+            self.assertVenues(json['results'], (venue,))
+            self.assertGreater(venue.alternative_names.count(), 0)
+            for alt_name in venue.alternative_names.all():
+                self.assertSuccess(
+                    'venues?alternative_names__name=' + alt_name.name)
+                json = self.assertJson()
+                self.assertVenues(json['results'], (venue,))
 
     def test_no_venues(self):
         """Get a list of venues when none exist."""
-        response = self.client.get('/v1/venues')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = json.loads(response.content.decode(response.charset))
-        self.assertEqual(len(data['results']), 0)
+        self.assertSuccess('venues')
+        json = self.assertJson()
+        self.assertEqual(len(json['results']), 0)
 
 class VenueCreateTest(TestCase):
     def test_create_venue(self):
