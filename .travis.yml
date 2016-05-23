@@ -14,4 +14,7 @@ install:
 script:
     - python manage.py test
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+    - bash <(curl -s https://codecov.io/bash)
+addons:
+    code_climate:
+        repo_token: 105bf2b5e31e17b451094a06e8a3466982ef98787e45eac5172704373d4f484a
