@@ -321,7 +321,7 @@ class VenueEditTest(TestCase):
                                    content_type='application/json')
         self.assertEqual(response.status_code, 404)
 
-class VenueDeleteTest(TestCase):
+class VenueDeleteTest(DeleteTestCase):
     def test_delete(self):
         """Test deleting venues."""
         venue = create_venue()

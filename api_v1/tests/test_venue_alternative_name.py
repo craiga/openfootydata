@@ -192,7 +192,7 @@ class AlternativeNameEditTest(TestCase):
                                    content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-class AlternativeNameDeleteTest(TestCase):
+class AlternativeNameDeleteTest(DeleteTestCase):
     def test_delete(self):
         """Test deleting venue alternative names."""
         alt_name = create_venue_alternative_name()
