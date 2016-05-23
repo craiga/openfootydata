@@ -14,10 +14,7 @@ class LeagueDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.League.objects.all()
     serializer_class = serializers.LeagueSerializer
 
-class TeamList(generics.ListCreateAPIView):
-    serializer_class = serializers.TeamSerializer
-    filter_fields = ('name', 'alternative_names__name')
-
+class TeamView:
     def get_queryset(self):
         league_id = self.kwargs['league_id']
         try:
@@ -25,31 +22,24 @@ class TeamList(generics.ListCreateAPIView):
         except models.League.DoesNotExist:
             raise Http404
         return models.Team.objects.filter(league=league)
+
+class TeamList(TeamView, generics.ListCreateAPIView):
+    serializer_class = serializers.TeamSerializer
+    filter_fields = ('name', 'alternative_names__name')
 
     def create(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(TeamList, self).create(request, *args, **kwargs)
 
-class TeamDetail(generics.RetrieveUpdateDestroyAPIView):
+class TeamDetail(TeamView, generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     serializer_class = serializers.TeamSerializer
-
-    def get_queryset(self):
-        league_id = self.kwargs['league_id']
-        try:
-            league = models.League.objects.get(pk=league_id)
-        except models.League.DoesNotExist:
-            raise Http404
-        return models.Team.objects.filter(league=league)
 
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(TeamDetail, self).update(request, *args, **kwargs)
 
-class TeamAlternativeNameList(generics.ListCreateAPIView):
-    serializer_class = serializers.TeamAlternativeNameSerializer
-    filter_fields = ('name',)
-
+class TeamAlternativeNameView:
     def get_queryset(self):
         league_id = self.kwargs['league_id']
         team_id = self.kwargs['team_id']
@@ -62,6 +52,11 @@ class TeamAlternativeNameList(generics.ListCreateAPIView):
         except models.Team.DoesNotExist:
             raise Http404
         return models.TeamAlternativeName.objects.filter(team=team)
+
+class TeamAlternativeNameList(TeamAlternativeNameView,
+                              generics.ListCreateAPIView):
+    serializer_class = serializers.TeamAlternativeNameSerializer
+    filter_fields = ('name',)
 
     def create(self, request, *args, **kwargs):
         request.data['team'] = kwargs['team_id']
@@ -69,22 +64,10 @@ class TeamAlternativeNameList(generics.ListCreateAPIView):
                                                             *args,
                                                             **kwargs)
 
-class TeamAlternativeNameDetail(generics.RetrieveUpdateDestroyAPIView):
+class TeamAlternativeNameDetail(TeamAlternativeNameView,
+                                generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     serializer_class = serializers.TeamAlternativeNameSerializer
-
-    def get_queryset(self):
-        league_id = self.kwargs['league_id']
-        team_id = self.kwargs['team_id']
-        try:
-            league = models.League.objects.get(pk=league_id)
-        except models.League.DoesNotExist:
-            raise Http404
-        try:
-            team = models.Team.objects.get(pk=team_id, league=league)
-        except models.Team.DoesNotExist:
-            raise Http404
-        return models.TeamAlternativeName.objects.filter(team=team)
 
     def update(self, request, *args, **kwargs):
         request.data['team'] = kwargs['team_id']
@@ -92,10 +75,7 @@ class TeamAlternativeNameDetail(generics.RetrieveUpdateDestroyAPIView):
                                                               *args,
                                                               **kwargs)
 
-class SeasonList(generics.ListCreateAPIView):
-    serializer_class = serializers.SeasonSerializer
-    filter_fields = ('name',)
-
+class SeasonView:
     def get_queryset(self):
         league_id = self.kwargs['league_id']
         try:
@@ -103,49 +83,24 @@ class SeasonList(generics.ListCreateAPIView):
         except models.League.DoesNotExist:
             raise Http404
         return models.Season.objects.filter(league=league)
+
+class SeasonList(SeasonView, generics.ListCreateAPIView):
+    serializer_class = serializers.SeasonSerializer
+    filter_fields = ('name',)
 
     def create(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(SeasonList, self).create(request, *args, **kwargs)
 
-class SeasonDetail(generics.RetrieveUpdateDestroyAPIView):
+class SeasonDetail(SeasonView, generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     serializer_class = serializers.SeasonSerializer
-
-    def get_queryset(self):
-        league_id = self.kwargs['league_id']
-        try:
-            league = models.League.objects.get(pk=league_id)
-        except models.League.DoesNotExist:
-            raise Http404
-        return models.Season.objects.filter(league=league)
 
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(SeasonDetail, self).update(request, *args, **kwargs)
 
-class GameList(generics.ListCreateAPIView):
-    serializer_class = serializers.GameSerializer
-    ordering = ('start',)
-    filter_fields = ('team_1', 'team_2')
-
-    def get_queryset(self):
-        league_id = self.kwargs['league_id']
-        season_id = self.kwargs['season_id']
-        try:
-            season = models.Season.objects.get(pk=season_id)
-        except models.Season.DoesNotExist:
-            raise Http404
-        return models.Game.objects.filter(season=season)
-
-    def create(self, request, *args, **kwargs):
-        request.data['season'] = kwargs['season_id']
-        return super(GameList, self).create(request, *args, **kwargs)
-
-class GameDetail(generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
-    serializer_class = serializers.GameSerializer
-
+class GameView:
     def get_queryset(self):
         league_id = self.kwargs['league_id']
         season_id = self.kwargs['season_id']
@@ -158,6 +113,19 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
         except models.Season.DoesNotExist:
             raise Http404
         return models.Game.objects.filter(season=season)
+
+class GameList(GameView, generics.ListCreateAPIView):
+    serializer_class = serializers.GameSerializer
+    ordering = ('start',)
+    filter_fields = ('team_1', 'team_2')
+
+    def create(self, request, *args, **kwargs):
+        request.data['season'] = kwargs['season_id']
+        return super(GameList, self).create(request, *args, **kwargs)
+
+class GameDetail(GameView, generics.RetrieveUpdateDestroyAPIView):
+    lookup_field = 'id'
+    serializer_class = serializers.GameSerializer
 
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
@@ -174,10 +142,7 @@ class VenueDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
 
-class VenueAlternativeNameList(generics.ListCreateAPIView):
-    serializer_class = serializers.VenueAlternativeNameSerializer
-    filter_fields = ('name',)
-
+class VenueAlternativeNameView:
     def get_queryset(self):
         venue_id = self.kwargs['venue_id']
         try:
@@ -185,6 +150,11 @@ class VenueAlternativeNameList(generics.ListCreateAPIView):
         except models.Venue.DoesNotExist:
             raise Http404
         return models.VenueAlternativeName.objects.filter(venue=venue)
+
+class VenueAlternativeNameList(VenueAlternativeNameView,
+                               generics.ListCreateAPIView):
+    serializer_class = serializers.VenueAlternativeNameSerializer
+    filter_fields = ('name',)
 
     def create(self, request, *args, **kwargs):
         request.data['venue'] = kwargs['venue_id']
@@ -192,17 +162,10 @@ class VenueAlternativeNameList(generics.ListCreateAPIView):
                                                             *args,
                                                             **kwargs)
 
-class VenueAlternativeNameDetail(generics.RetrieveUpdateDestroyAPIView):
+class VenueAlternativeNameDetail(VenueAlternativeNameView,
+                                 generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     serializer_class = serializers.VenueAlternativeNameSerializer
-
-    def get_queryset(self):
-        venue_id = self.kwargs['venue_id']
-        try:
-            venue = models.Venue.objects.get(pk=venue_id)
-        except models.Venue.DoesNotExist:
-            raise Http404
-        return models.VenueAlternativeName.objects.filter(venue=venue)
 
     def update(self, request, *args, **kwargs):
         request.data['venue'] = kwargs['venue_id']
