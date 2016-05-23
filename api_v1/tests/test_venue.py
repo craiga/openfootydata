@@ -4,8 +4,11 @@ from decimal import Decimal
 from django.test import TestCase
 
 from models.models import Venue
-from .helpers import (create_venue, create_venue_alternative_name,
-    random_string, random_decimal)
+from .helpers import (create_venue,
+                      create_venue_alternative_name,
+                      random_string,
+                      random_decimal,
+                      DeleteTestCase)
 
 class VenueDetailTest(TestCase):
     def test_venue_detail(self):
@@ -319,16 +322,11 @@ class VenueEditTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
 class VenueDeleteTest(TestCase):
-    def test_delete_venue(self):
-        """Delete a venue"""
+    def test_delete(self):
+        """Test deleting venues."""
         venue = create_venue()
-        response = self.client.delete('/v1/venues/{}'.format(venue.id))
-        self.assertEqual(response.status_code, 204)
-
-    def test_no_such_venue(self):
-        """Delete a non-existent venue"""
-        response = self.client.delete('/v1/venues/no_such_venue')
-        self.assertEqual(response.status_code, 404)
+        self.assertSuccess('venues', venue.id)
+        self.assertNotFound('venues', 'no_such_venue')
 
 def random_latitude():
     return random_decimal(min=-90, max=90, precision=6)

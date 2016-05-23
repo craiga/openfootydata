@@ -3,6 +3,8 @@ import string
 import datetime
 from decimal import Decimal
 
+from django.test import TestCase
+
 from models import models
 
 def random_string(length=5):
@@ -122,3 +124,28 @@ def create_game(league=None,
                        team_2_behinds=random.randint(0, 100))
     game.save()
     return game
+
+
+def normalise_path(path):
+    """Takes a list or tuple and turns it into an API v1 URL."""
+    return '/v1/' + '/'.join(str(x) for x in path)
+
+
+class DeleteTestCase(TestCase):
+    """Base for API v1 deletion tests."""
+    def assertStatusCode(self, path, status_code):
+        """
+        Assert that a delete request responds with the expected status code
+        with the given URL parts.
+        """
+        path = normalise_path(path)
+        response = self.client.delete(path)
+        self.assertEqual(response.status_code, status_code)
+
+    def assertSuccess(self, *args):
+        """Assert that a delete request is successful."""
+        self.assertStatusCode(args, 204)
+
+    def assertNotFound(self, *args):
+        """Assert that a delete request results in a 404 response."""
+        self.assertStatusCode(args, 404)

@@ -4,7 +4,10 @@ import re
 from django.test import TestCase
 
 from models.models import VenueAlternativeName
-from .helpers import create_venue_alternative_name, create_venue, random_string
+from .helpers import (create_venue_alternative_name,
+                      create_venue,
+                      random_string,
+                      DeleteTestCase)
 
 class VenueAlternativeNameDetailTest(TestCase):
     def test_alt_name_detail(self):
@@ -190,32 +193,15 @@ class AlternativeNameEditTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
 class AlternativeNameDeleteTest(TestCase):
-    def test_delete_alternative_name(self):
-        """Delete an alternative name"""
+    def test_delete(self):
+        """Test deleting venue alternative names."""
         alt_name = create_venue_alternative_name()
-        url = '/v1/venues/{}/alternative_names/{}'.format(alt_name.venue.id,
-                                                          alt_name.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 204)
-
-    def test_no_such_alternative_name(self):
-        """Delete a non-existent alternative name"""
-        venue = create_venue()
-        url = '/v1/venues/{}/alternative_names/none'.format(venue.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_venue(self):
-        """Delete an alternative name in a non-existent venue"""
-        alt_name = create_venue_alternative_name()
-        url = '/v1/venues/none/alternative_names/{}'.format(alt_name.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_alt_name_not_in_venue(self):
-        """Delete an alternative name from a venue it doesn't exist in"""
-        venue = create_venue()
-        alt_name = create_venue_alternative_name()
-        url = '/v1/venues/{}/alternative_names/{}'.format(venue.id, alt_name.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
+        other_venue = create_venue()
+        self.assertSuccess('venues', alt_name.venue.id,
+                           'alternative_names', alt_name.id)
+        self.assertNotFound('venues', alt_name.venue.id,
+                            'alternative_names', 'no_such_alt_name')
+        self.assertNotFound('venues', 'no_such_venue',
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('venues', other_venue.id,
+                            'alternative_names', alt_name.id)

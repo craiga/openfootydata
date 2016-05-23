@@ -3,7 +3,7 @@ import json
 from django.test import TestCase
 
 from models.models import Season
-from .helpers import create_season, create_league, random_string
+from .helpers import create_season, create_league, random_string, DeleteTestCase
 
 class SeasonDetailTest(TestCase):
     def test_season_detail(self):
@@ -248,32 +248,12 @@ class SeasonEditTest(TestCase):
                                    content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-class SeasonDeleteTest(TestCase):
-    def test_delete_season(self):
-        """Delete a season"""
+class SeasonDeleteTest(DeleteTestCase):
+    def test_delete(self):
+        """Test deleting seasons."""
         season = create_season()
-        url = '/v1/leagues/{}/seasons/{}'.format(season.league.id, season.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 204)
-
-    def test_no_such_season(self):
-        """Delete a non-existent season"""
-        league = create_league()
-        url = '/v1/leagues/{}/seasons/no_such_season'.format(league.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_league(self):
-        """Delete a season in a non-existent league"""
-        season = create_season()
-        url = '/v1/leagues/no_such_league/seasons/{}'.format(season.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_season_not_in_league(self):
-        """Delete a season from a league it doesn't exist in"""
-        league = create_league()
-        season = create_season()
-        url = '/v1/leagues/{}/seasons/{}'.format(league.id, season.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
+        other_league = create_league()
+        self.assertSuccess('leagues', season.league.id, 'seasons', season.id)
+        self.assertNotFound('leagues', season.league.id, 'seasons', 'no_such')
+        self.assertNotFound('leagues', 'no_such', 'seasons', season.id)
+        self.assertNotFound('leagues', other_league.id, 'seasons', season.id)

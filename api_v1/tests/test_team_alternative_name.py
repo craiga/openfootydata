@@ -7,7 +7,8 @@ from models.models import TeamAlternativeName
 from .helpers import (create_team_alternative_name,
                       create_league,
                       create_team,
-                      random_string)
+                      random_string,
+                      DeleteTestCase)
 
 class TeamAlternativeNameDetailTest(TestCase):
     def test_alt_name_detail(self):
@@ -210,36 +211,27 @@ class AlternativeNameEditTest(TestCase):
                                    content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-class AlternativeNameDeleteTest(TestCase):
-    def test_delete_alternative_name(self):
-        """Delete an alternative name"""
+class AlternativeNameDeleteTest(DeleteTestCase):
+    def test_delete(self):
+        """Test deleting team alternative names."""
         alt_name = create_team_alternative_name()
-        url = '/v1/leagues/{}/teams/{}/alternative_names/{}'.format(
-            alt_name.team.league.id, alt_name.team.id, alt_name.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 204)
-
-    def test_no_such_alternative_name(self):
-        """Delete a non-existent alternative name"""
-        team = create_team()
-        url = '/v1/leagues/{}/teams/{}/alternative_names/none'.format(
-            team.league.id, team.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_team(self):
-        """Delete an alternative name in a non-existent team"""
-        alt_name = create_team_alternative_name()
-        url = '/v1/leagues/{}/teams/none/alternative_names/{}'.format(
-            alt_name.team.league.id, alt_name.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_alt_name_not_in_team(self):
-        """Delete an alternative name from a team it doesn't exist in"""
-        team = create_team()
-        alt_name = create_team_alternative_name()
-        url = '/v1/leagues/{}/teams/{}/alternative_names/{}'.format(
-            team.league.id, team.id, alt_name.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
+        other_team = create_team()
+        other_league = create_league()
+        self.assertSuccess('leagues', alt_name.team.league.id,
+                           'teams', alt_name.team.id,
+                           'alternative_names', alt_name.id)
+        self.assertNotFound('leagues', alt_name.team.league.id,
+                            'teams', alt_name.team.id,
+                            'alternative_names', 'no_such_alt_name')
+        self.assertNotFound('leagues', alt_name.team.league.id,
+                            'teams', 'no_such_team',
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('leagues', 'no_such_league',
+                            'teams', alt_name.team.id,
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('leagues', alt_name.team.league.id,
+                            'teams', other_team.id,
+                            'alternative_names', alt_name.id)
+        self.assertNotFound('leagues', other_league.id,
+                            'teams', alt_name.team.id,
+                            'alternative_names', alt_name.id)

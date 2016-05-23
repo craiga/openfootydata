@@ -3,7 +3,7 @@ import json
 from django.test import TestCase
 
 from models.models import League
-from .helpers import create_league, random_string
+from .helpers import create_league, random_string, DeleteTestCase
 
 class LeagueDetailTest(TestCase):
     def test_league_detail(self):
@@ -170,14 +170,9 @@ class LeagueEditTest(TestCase):
                                    content_type='application/json')
         self.assertEqual(response.status_code, 404)
 
-class LeagueDeleteTest(TestCase):
-    def test_delete_league(self):
-        """Delete a league"""
+class LeagueDeleteTest(DeleteTestCase):
+    def test_delete(self):
+        """Test deleting leagues."""
         league = create_league()
-        response = self.client.delete('/v1/leagues/{}'.format(league.id))
-        self.assertEqual(response.status_code, 204)
-
-    def test_no_such_league(self):
-        """Delete a non-existent league"""
-        response = self.client.delete('/v1/leagues/no_such_league')
-        self.assertEqual(response.status_code, 404)
+        self.assertSuccess('leagues', league.id)
+        self.assertNotFound('leagues', 'no_such_league')

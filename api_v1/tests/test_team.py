@@ -7,7 +7,8 @@ from .helpers import (create_team,
                       create_team_alternative_name,
                       create_league,
                       random_string,
-                      random_colour)
+                      random_colour,
+                      DeleteTestCase)
 
 class TeamDetailTest(TestCase):
     def test_team_detail(self):
@@ -440,32 +441,12 @@ class TeamEditTest(TestCase):
                                        content_type='application/json')
             self.assertEqual(response.status_code, 400)
 
-class TeamDeleteTest(TestCase):
-    def test_delete_team(self):
-        """Delete a team"""
+class TeamDeleteTest(DeleteTestCase):
+    def test_delete(self):
+        """Test deleting teams."""
         team = create_team()
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 204)
-
-    def test_no_such_team(self):
-        """Delete a non-existent team"""
-        league = create_league()
-        url = '/v1/leagues/{}/teams/no_such_team'.format(league.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_no_such_league(self):
-        """Delete a team in a non-existent league"""
-        team = create_team()
-        url = '/v1/leagues/no_such_league/teams/{}'.format(team.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_team_not_in_league(self):
-        """Delete a team from a league it doesn't exist in"""
-        league = create_league()
-        team = create_team()
-        url = '/v1/leagues/{}/teams/{}'.format(league.id, team.id)
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, 404)
+        other_league = create_league()
+        self.assertSuccess('leagues', team.league.id, 'teams', team.id)
+        self.assertNotFound('leagues', team.league.id, 'teams', 'no_such_team')
+        self.assertNotFound('leagues', 'no_such_league', 'teams', team.id)
+        self.assertSuccess('leagues', other_league.id, 'teams', team.id)
