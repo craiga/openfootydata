@@ -16,17 +16,18 @@ class LeagueDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.LeagueSerializer
 
 
-class TeamView:
+class LeagueRelatedViewMixin:
     def get_queryset(self):
         league_id = self.kwargs['league_id']
         try:
             league = models.League.objects.get(pk=league_id)
         except models.League.DoesNotExist:
             raise Http404
-        return models.Team.objects.filter(league=league)
+        model = self.get_serializer_class().Meta.model
+        return model.objects.filter(league=league)
 
 
-class TeamList(TeamView, generics.ListCreateAPIView):
+class TeamList(LeagueRelatedViewMixin, generics.ListCreateAPIView):
     serializer_class = serializers.TeamSerializer
     filter_fields = ('name', 'alternative_names__name')
 
@@ -35,7 +36,7 @@ class TeamList(TeamView, generics.ListCreateAPIView):
         return super(TeamList, self).create(request, *args, **kwargs)
 
 
-class TeamDetail(TeamView, generics.RetrieveUpdateDestroyAPIView):
+class TeamDetail(LeagueRelatedViewMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.TeamSerializer
 
     def update(self, request, *args, **kwargs):
@@ -81,17 +82,7 @@ class TeamAlternativeNameDetail(TeamAlternativeNameView,
                                                               **kwargs)
 
 
-class SeasonView:
-    def get_queryset(self):
-        league_id = self.kwargs['league_id']
-        try:
-            league = models.League.objects.get(pk=league_id)
-        except models.League.DoesNotExist:
-            raise Http404
-        return models.Season.objects.filter(league=league)
-
-
-class SeasonList(SeasonView, generics.ListCreateAPIView):
+class SeasonList(LeagueRelatedViewMixin, generics.ListCreateAPIView):
     serializer_class = serializers.SeasonSerializer
     filter_fields = ('name',)
 
@@ -100,7 +91,8 @@ class SeasonList(SeasonView, generics.ListCreateAPIView):
         return super(SeasonList, self).create(request, *args, **kwargs)
 
 
-class SeasonDetail(SeasonView, generics.RetrieveUpdateDestroyAPIView):
+class SeasonDetail(LeagueRelatedViewMixin,
+                   generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.SeasonSerializer
 
     def update(self, request, *args, **kwargs):
