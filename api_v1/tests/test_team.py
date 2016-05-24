@@ -25,7 +25,7 @@ class TeamTestCase(TestCase):
         self.assertEqual(json['secondary_colour'], team.secondary_colour)
         self.assertEqual(json['tertiary_colour'], team.tertiary_colour)
         self.assertTeamUrl(json['url'], team)
-        self.assertEqual(json['league'], team.league.id)
+        self.assertEqual(json['league'], team.league_id)
         self.assertEqual(set(json['alternative_names']),
                          {n.name for n in team.alternative_names.all()})
 
@@ -43,7 +43,7 @@ class TeamTestCase(TestCase):
 
     def assertTeamUrl(self, url, team):
         """Assert that the given URL relates to the given team."""
-        url_regex = '/v1/leagues/{}/teams/{}$'.format(team.league.id, team.id)
+        url_regex = '/v1/leagues/{}/teams/{}$'.format(team.league_id, team.id)
         self.assertRegex(url, url_regex)
 
 
@@ -52,7 +52,7 @@ class TeamDetailTest(GetTestCase, TeamTestCase):
         """Get team detail."""
         teams = (create_team(), create_team(num_alternative_names=0))
         for team in teams:
-            self.assertSuccess('leagues', team.league.id,
+            self.assertSuccess('leagues', team.league_id,
                                'teams', team.id)
             json = self.assertJson()
             self.assertTeam(json, team)
@@ -61,7 +61,7 @@ class TeamDetailTest(GetTestCase, TeamTestCase):
         """Test when no team exists."""
         team = create_team()
         other_league = create_league()
-        self.assertNotFound('leagues', team.league.id,
+        self.assertNotFound('leagues', team.league_id,
                             'teams', 'no_such_team')
         self.assertNotFound('leagues', 'no_such_league',
                             'teams', team.id)
@@ -139,7 +139,7 @@ class TeamCreateTest(TestCase):
         self.assertEqual(team.primary_colour, post_data['primary_colour'])
         self.assertEqual(team.secondary_colour, post_data['secondary_colour'])
         self.assertEqual(team.tertiary_colour, post_data['tertiary_colour'])
-        self.assertEqual(team.league.id, league.id)
+        self.assertEqual(team.league_id, league.id)
         self.assertEqual(team.alternative_names.count(), 0)
 
     def test_no_colours(self):
@@ -163,7 +163,7 @@ class TeamCreateTest(TestCase):
         self.assertEqual(team.primary_colour, None)
         self.assertEqual(team.secondary_colour, None)
         self.assertEqual(team.tertiary_colour, None)
-        self.assertEqual(team.league.id, league.id)
+        self.assertEqual(team.league_id, league.id)
 
     def test_missing_id(self):
         """Create a team without an ID"""
@@ -190,7 +190,7 @@ class TeamCreateTest(TestCase):
         """Create a team with an ID that alrady exists"""
         team = create_team()
         post_data = {'id': team.id, 'name': random_string()}
-        url = '/v1/leagues/{}/teams'.format(team.league.id)
+        url = '/v1/leagues/{}/teams'.format(team.league_id)
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, 400)
 
@@ -238,7 +238,7 @@ class TeamEditTest(TestCase):
                     'primary_colour': random_colour(),
                     'secondary_colour': random_colour(),
                     'tertiary_colour': random_colour()}
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
+        url = '/v1/leagues/{}/teams/{}'.format(team.league_id, team.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -253,22 +253,22 @@ class TeamEditTest(TestCase):
                          put_data['secondary_colour'])
         self.assertEqual(response_data['tertiary_colour'],
                          put_data['tertiary_colour'])
-        self.assertEqual(response_data['league'], team.league.id)
-        url_regex = r'/v1/leagues/{}/teams/{}$'.format(team.league.id, team.id)
+        self.assertEqual(response_data['league'], team.league_id)
+        url_regex = r'/v1/leagues/{}/teams/{}$'.format(team.league_id, team.id)
         self.assertRegex(response_data['url'], url_regex)
         team.refresh_from_db()
         self.assertEqual(team.name, put_data['name'])
         self.assertEqual(team.primary_colour, put_data['primary_colour'])
         self.assertEqual(team.secondary_colour, put_data['secondary_colour'])
         self.assertEqual(team.tertiary_colour, put_data['tertiary_colour'])
-        self.assertEqual(team.league.id, team.league.id)
+        self.assertEqual(team.league_id, team.league_id)
 
     def test_no_colours(self):
         """Edit a team with no colours."""
         team = create_team()
         put_data = {'id': team.id,
                     'name': random_string()}
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
+        url = '/v1/leagues/{}/teams/{}'.format(team.league_id, team.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -292,7 +292,7 @@ class TeamEditTest(TestCase):
                     'primary_colour': None,
                     'secondary_colour': None,
                     'tertiary_colour': None}
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
+        url = '/v1/leagues/{}/teams/{}'.format(team.league_id, team.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -352,7 +352,7 @@ class TeamEditTest(TestCase):
         team = create_team()
         put_data = {'id': team.id,
                     'primary_colour': random_colour()}
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
+        url = '/v1/leagues/{}/teams/{}'.format(team.league_id, team.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -361,7 +361,7 @@ class TeamEditTest(TestCase):
     def test_invalid_colours(self):
         """Edit a team with invalid colours"""
         team = create_team()
-        url = '/v1/leagues/{}/teams/{}'.format(team.league.id, team.id)
+        url = '/v1/leagues/{}/teams/{}'.format(team.league_id, team.id)
         invalid_colours = (random_string())
         for invalid_colour in invalid_colours:
             put_data = {'id': random_string(),
@@ -397,8 +397,8 @@ class TeamDeleteTest(DeleteTestCase):
         """Test deleting teams."""
         team = create_team()
         other_league = create_league()
-        self.assertSuccess('leagues', team.league.id, 'teams', team.id)
-        self.assertNotFound('leagues', team.league.id, 'teams', 'no_such_team')
+        self.assertSuccess('leagues', team.league_id, 'teams', team.id)
+        self.assertNotFound('leagues', team.league_id, 'teams', 'no_such_team')
         self.assertNotFound('leagues', 'no_such_league', 'teams', team.id)
         self.assertNotFound('leagues', other_league.id, 'teams', team.id)
 

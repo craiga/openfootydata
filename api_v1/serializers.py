@@ -19,7 +19,7 @@ class LeagueRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
     def get_url(self, obj, view_name, request, format):
         return self.reverse(view_name,
                             kwargs={self.lookup_url_kwarg: obj.id,
-                                    'league_id': obj.league.id},
+                                    'league_id': obj.league_id},
                             request=request,
                             format=format)
 
@@ -27,8 +27,8 @@ class SeasonRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
     def get_url(self, obj, view_name, request, format):
         return self.reverse(view_name,
                             kwargs={self.lookup_url_kwarg: obj.id,
-                                    'season_id': obj.season.id,
-                                    'league_id': obj.season.league.id},
+                                    'season_id': obj.season_id,
+                                    'league_id': obj.season.league_id},
                             request=request,
                             format=format)
 
@@ -50,7 +50,7 @@ class TeamHyperlink(HyperlinkedRelatedField):
         team = models.Team.objects.get(pk=obj.pk)
         return self.reverse(view_name,
                             kwargs={self.lookup_url_kwarg: team.id,
-                                    'league_id': team.league.id},
+                                    'league_id': team.league_id},
                             request=request,
                             format=format)
 
@@ -63,8 +63,8 @@ class TeamRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
     def get_url(self, obj, view_name, request, format):
         return self.reverse(view_name,
                             kwargs={self.lookup_url_kwarg: obj.id,
-                                    'team_id': obj.team.id,
-                                    'league_id': obj.team.league.id},
+                                    'team_id': obj.team_id,
+                                    'league_id': obj.team.league_id},
                             request=request,
                             format=format)
 
@@ -111,7 +111,7 @@ class VenueRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
     def get_url(self, obj, view_name, request, format):
         return self.reverse(view_name,
                             kwargs={self.lookup_url_kwarg: obj.id,
-                                    'venue_id': obj.venue.id},
+                                    'venue_id': obj.venue_id},
                             request=request,
                             format=format)
 

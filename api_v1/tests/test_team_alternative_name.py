@@ -22,7 +22,7 @@ class TeamAlternativeNameTestCase:
         self.assertEqual(json['id'], alt_name.id)
         self.assertEqual(json['name'], alt_name.name)
         self.assertTeamAlternativeNameUrl(json['url'], alt_name)
-        self.assertEqual(json['team'], alt_name.team.id)
+        self.assertEqual(json['team'], alt_name.team_id)
 
     def assertTeamAlternativeNames(self, json, alt_names):
         """
@@ -42,7 +42,7 @@ class TeamAlternativeNameTestCase:
         Assert that the given URL relates to the given team alternative name.
         """
         url_regex = '/v1/leagues/{}/teams/{}/alternative_names/{}$'.format(
-            alt_name.team.league.id, alt_name.team.id, alt_name.id)
+            alt_name.team.league_id, alt_name.team_id, alt_name.id)
         self.assertRegex(url, url_regex)
 
 
@@ -50,8 +50,8 @@ class TeamAlternativeNameDetailTest(GetTestCase, TeamAlternativeNameTestCase):
     def test_alt_name_detail(self):
         """Get alternative name detail."""
         alt_name = create_team_alternative_name()
-        self.assertSuccess('leagues', alt_name.team.league.id,
-                           'teams', alt_name.team.id,
+        self.assertSuccess('leagues', alt_name.team.league_id,
+                           'teams', alt_name.team_id,
                            'alternative_names', alt_name.id)
         json = self.assertJson()
         self.assertTeamAlternativeName(json, alt_name)
@@ -61,20 +61,20 @@ class TeamAlternativeNameDetailTest(GetTestCase, TeamAlternativeNameTestCase):
         alt_name = create_team_alternative_name()
         other_team = create_team()
         other_league = create_league()
-        self.assertNotFound('leagues', alt_name.team.league.id,
-                            'teams', alt_name.team.id,
+        self.assertNotFound('leagues', alt_name.team.league_id,
+                            'teams', alt_name.team_id,
                             'alternative_names', 'no_such_alt_name')
-        self.assertNotFound('leagues', alt_name.team.league.id,
+        self.assertNotFound('leagues', alt_name.team.league_id,
                             'teams', 'no_such_team',
                             'alternative_names', alt_name.id)
         self.assertNotFound('leagues', 'no_such_league',
-                            'teams', alt_name.team.id,
+                            'teams', alt_name.team_id,
                             'alternative_names', alt_name.id)
-        self.assertNotFound('leagues', alt_name.team.league.id,
+        self.assertNotFound('leagues', alt_name.team.league_id,
                             'teams', other_team.id,
                             'alternative_names', alt_name.id)
         self.assertNotFound('leagues', other_league.id,
-                            'teams', alt_name.team.id,
+                            'teams', alt_name.team_id,
                             'alternative_names', alt_name.id)
 
 
@@ -99,7 +99,7 @@ class AlternativeNameListTest(GetTestCase, TeamAlternativeNameTestCase):
         Get a list of alternative names when none exist in the given team.
         """
         team = create_team(num_alternative_names=0)
-        self.assertSuccess('leagues', team.league.id,
+        self.assertSuccess('leagues', team.league_id,
                            'teams', team.id,
                            'alternative_names')
         json = self.assertJson()
@@ -118,12 +118,12 @@ class AlternativeNameCreateTest(TestCase):
         team = create_team()
         post_data = {'name': random_string()}
         url = '/v1/leagues/{}/teams/{}/alternative_names'.format(
-            team.league.id, team.id)
+            team.league_id, team.id)
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response['Content-Type'], 'application/json')
         url_regex = '/v1/leagues/{}/teams/{}/alternative_names/(\d+)$'.format(
-            team.league.id, team.id)
+            team.league_id, team.id)
         url_match = re.search(url_regex, response['Location'])
         self.assertIsNotNone(url_match)
         team_id = int(url_match.group(1))
@@ -134,14 +134,14 @@ class AlternativeNameCreateTest(TestCase):
         self.assertRegex(response_data['url'], url_regex)
         alternative_name = TeamAlternativeName.objects.get(pk=team_id)
         self.assertEqual(alternative_name.name, post_data['name'])
-        self.assertEqual(alternative_name.team.id, team.id)
+        self.assertEqual(alternative_name.team_id, team.id)
 
     def test_missing_name(self):
         """Create an alternative name without a name"""
         team = create_team()
         post_data = {}
         url = '/v1/leagues/{}/teams/{}/alternative_names'.format(
-            team.league.id, team.id)
+            team.league_id, team.id)
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, 400)
 
@@ -151,7 +151,7 @@ class AlternativeNameEditTest(TestCase):
         alt_name = create_team_alternative_name()
         put_data = {'name': random_string()}
         url = '/v1/leagues/{}/teams/{}/alternative_names/{}'.format(
-            alt_name.team.league.id, alt_name.team.id, alt_name.id)
+            alt_name.team.league_id, alt_name.team_id, alt_name.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -160,9 +160,9 @@ class AlternativeNameEditTest(TestCase):
         response_data = json.loads(response.content.decode(response.charset))
         self.assertEqual(response_data['id'], alt_name.id)
         self.assertEqual(response_data['name'], put_data['name'])
-        self.assertEqual(response_data['team'], alt_name.team.id)
+        self.assertEqual(response_data['team'], alt_name.team_id)
         url_regex = r'/v1/leagues/{}/teams/{}/alternative_names/{}$'.format(
-            alt_name.team.league.id, alt_name.team.id, alt_name.id)
+            alt_name.team.league_id, alt_name.team_id, alt_name.id)
         self.assertRegex(response_data['url'], url_regex)
         alt_name.refresh_from_db()
         self.assertEqual(alt_name.name, put_data['name'])
@@ -172,7 +172,7 @@ class AlternativeNameEditTest(TestCase):
         team = create_team()
         put_data = {'name': random_string()}
         url = '/v1/leagues/{}/teams/{}/alternative_names/none'.format(
-            team.league.id, team.id)
+            team.league_id, team.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -183,7 +183,7 @@ class AlternativeNameEditTest(TestCase):
         alt_name = create_team_alternative_name()
         put_data = {'name': random_string()}
         url = '/v1/leagues{}/teams/none/alternative_names/{}'.format(
-            alt_name.team.league.id, alt_name.id)
+            alt_name.team.league_id, alt_name.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -195,7 +195,7 @@ class AlternativeNameEditTest(TestCase):
         alt_name = create_team_alternative_name()
         put_data = {'name': random_string()}
         url = '/v1/leagues/{}/teams/{}/alternative_names/{}'.format(
-            team.league.id, team.id, alt_name.id)
+            team.league_id, team.id, alt_name.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -206,7 +206,7 @@ class AlternativeNameEditTest(TestCase):
         alt_name = create_team_alternative_name()
         put_data = {}
         url = '/v1/leagues/{}/teams/{}/alternative_names/{}'.format(
-            alt_name.team.league.id, alt_name.team.id, alt_name.id)
+            alt_name.team.league_id, alt_name.team_id, alt_name.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -218,21 +218,21 @@ class AlternativeNameDeleteTest(DeleteTestCase):
         alt_name = create_team_alternative_name()
         other_team = create_team()
         other_league = create_league()
-        self.assertSuccess('leagues', alt_name.team.league.id,
-                           'teams', alt_name.team.id,
+        self.assertSuccess('leagues', alt_name.team.league_id,
+                           'teams', alt_name.team_id,
                            'alternative_names', alt_name.id)
-        self.assertNotFound('leagues', alt_name.team.league.id,
-                            'teams', alt_name.team.id,
+        self.assertNotFound('leagues', alt_name.team.league_id,
+                            'teams', alt_name.team_id,
                             'alternative_names', 'no_such_alt_name')
-        self.assertNotFound('leagues', alt_name.team.league.id,
+        self.assertNotFound('leagues', alt_name.team.league_id,
                             'teams', 'no_such_team',
                             'alternative_names', alt_name.id)
         self.assertNotFound('leagues', 'no_such_league',
-                            'teams', alt_name.team.id,
+                            'teams', alt_name.team_id,
                             'alternative_names', alt_name.id)
-        self.assertNotFound('leagues', alt_name.team.league.id,
+        self.assertNotFound('leagues', alt_name.team.league_id,
                             'teams', other_team.id,
                             'alternative_names', alt_name.id)
         self.assertNotFound('leagues', other_league.id,
-                            'teams', alt_name.team.id,
+                            'teams', alt_name.team_id,
                             'alternative_names', alt_name.id)

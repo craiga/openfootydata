@@ -22,7 +22,7 @@ class SeasonTestCase:
         self.assertEqual(json['name'], season.name)
         self.assertSeasonUrl(json['url'], season)
         self.assertGamesUrl(json['games'], season)
-        self.assertEqual(json['league'], season.league.id)
+        self.assertEqual(json['league'], season.league_id)
 
     def assertSeasons(self, json, seasons):
         """
@@ -38,13 +38,13 @@ class SeasonTestCase:
 
     def assertSeasonUrl(self, url, season):
         """Assert that the given URL relates to the given season."""
-        url_regex = '/v1/leagues/{}/seasons/{}$'.format(season.league.id,
+        url_regex = '/v1/leagues/{}/seasons/{}$'.format(season.league_id,
                                                         season.id)
         self.assertRegex(url, url_regex)
 
     def assertGamesUrl(self, url, season):
         """Assert that the given URL relates to games in the given season."""
-        url_regex = '/v1/leagues/{}/seasons/{}/games$'.format(season.league.id,
+        url_regex = '/v1/leagues/{}/seasons/{}/games$'.format(season.league_id,
                                                               season.id)
         self.assertRegex(url, url_regex)
 
@@ -53,7 +53,7 @@ class SeasonDetailTest(GetTestCase, SeasonTestCase):
     def test_season_detail(self):
         """Get season detail."""
         season = create_season()
-        self.assertSuccess('leagues', season.league.id, 'seasons', season.id)
+        self.assertSuccess('leagues', season.league_id, 'seasons', season.id)
         json = self.assertJson()
         self.assertSeason(json, season)
 
@@ -61,7 +61,7 @@ class SeasonDetailTest(GetTestCase, SeasonTestCase):
         """Test when no season exists."""
         season = create_season()
         other_league = create_league()
-        self.assertNotFound('leagues', season.league.id, 'seasons', 'no_season')
+        self.assertNotFound('leagues', season.league_id, 'seasons', 'no_season')
         self.assertNotFound('leagues', 'no_such_league', 'seasons', season.id)
         self.assertNotFound('leagues', other_league.id, 'seasons', season.id)
 
@@ -121,7 +121,7 @@ class SeasonCreateTest(TestCase):
         season = Season.objects.get(pk=post_data['id'])
         self.assertEqual(season.id, post_data['id'])
         self.assertEqual(season.name, post_data['name'])
-        self.assertEqual(season.league.id, league.id)
+        self.assertEqual(season.league_id, league.id)
 
     def test_missing_id(self):
         """Create a season without an ID"""
@@ -146,7 +146,7 @@ class SeasonCreateTest(TestCase):
         """Create a season with an ID that already exists"""
         season = create_season()
         post_data = {'id': season.id, 'name': random_string()}
-        url = '/v1/leagues/{}/seasons'.format(season.league.id)
+        url = '/v1/leagues/{}/seasons'.format(season.league_id)
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, 400)
 
@@ -164,7 +164,7 @@ class SeasonEditTest(TestCase):
         season = create_season()
         put_data = {'id': season.id,
                     'name': random_string()}
-        url = '/v1/leagues/{}/seasons/{}'.format(season.league.id, season.id)
+        url = '/v1/leagues/{}/seasons/{}'.format(season.league_id, season.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -173,16 +173,16 @@ class SeasonEditTest(TestCase):
         response_data = json.loads(response.content.decode(response.charset))
         self.assertEqual(response_data['id'], put_data['id'])
         self.assertEqual(response_data['name'], put_data['name'])
-        self.assertEqual(response_data['league'], season.league.id)
-        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(season.league.id,
+        self.assertEqual(response_data['league'], season.league_id)
+        url_regex = r'/v1/leagues/{}/seasons/{}$'.format(season.league_id,
                                                          season.id)
         self.assertRegex(response_data['url'], url_regex)
-        url_regex = r'/v1/leagues/{}/seasons/{}/games$'.format(season.league.id,
+        url_regex = r'/v1/leagues/{}/seasons/{}/games$'.format(season.league_id,
                                                                season.id)
         self.assertRegex(response_data['games'], url_regex)
         season.refresh_from_db()
         self.assertEqual(season.name, put_data['name'])
-        self.assertEqual(season.league.id, season.league.id)
+        self.assertEqual(season.league_id, season.league_id)
 
     def test_no_such_season(self):
         """Edit a non-existent season"""
@@ -222,7 +222,7 @@ class SeasonEditTest(TestCase):
         """Edit a season without a name"""
         season = create_season()
         put_data = {'id': season.id}
-        url = '/v1/leagues/{}/seasons/{}'.format(season.league.id, season.id)
+        url = '/v1/leagues/{}/seasons/{}'.format(season.league_id, season.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
                                    content_type='application/json')
@@ -233,7 +233,7 @@ class SeasonDeleteTest(DeleteTestCase):
         """Test deleting seasons."""
         season = create_season()
         other_league = create_league()
-        self.assertSuccess('leagues', season.league.id, 'seasons', season.id)
-        self.assertNotFound('leagues', season.league.id, 'seasons', 'no_such')
+        self.assertSuccess('leagues', season.league_id, 'seasons', season.id)
+        self.assertNotFound('leagues', season.league_id, 'seasons', 'no_such')
         self.assertNotFound('leagues', 'no_such', 'seasons', season.id)
         self.assertNotFound('leagues', other_league.id, 'seasons', season.id)

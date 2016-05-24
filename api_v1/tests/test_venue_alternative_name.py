@@ -22,7 +22,7 @@ class VenueAlternativeNameTestCase:
         self.assertEqual(json['id'], alt_name.id)
         self.assertEqual(json['name'], alt_name.name)
         self.assertVenueAlternativeNameUrl(json['url'], alt_name)
-        self.assertEqual(json['venue'], alt_name.venue.id)
+        self.assertEqual(json['venue'], alt_name.venue_id)
 
     def assertVenueAlternativeNames(self, json, alt_names):
         """
@@ -43,7 +43,7 @@ class VenueAlternativeNameTestCase:
         name.
         """
         url_regex = '/v1/venues/{}/alternative_names/{}$'.format(
-            alt_name.venue.id, alt_name.id)
+            alt_name.venue_id, alt_name.id)
         self.assertRegex(url, url_regex)
 
 
@@ -51,7 +51,7 @@ class VenueAlternativeNameDetailTest(GetTestCase, VenueAlternativeNameTestCase):
     def test_alt_name_detail(self):
         """Get alternative name detail."""
         alt_name = create_venue_alternative_name()
-        self.assertSuccess('venues', alt_name.venue.id,
+        self.assertSuccess('venues', alt_name.venue_id,
                            'alternative_names', alt_name.id)
         json = self.assertJson()
         self.assertVenueAlternativeName(json, alt_name)
@@ -60,7 +60,7 @@ class VenueAlternativeNameDetailTest(GetTestCase, VenueAlternativeNameTestCase):
         """Test when no alternative_name exists."""
         alt_name = create_venue_alternative_name()
         other_venue = create_venue()
-        self.assertNotFound('venues', alt_name.venue.id,
+        self.assertNotFound('venues', alt_name.venue_id,
                             'alternative_names', 'no_such_alt_name')
         self.assertNotFound('venues', 'no_such_venue',
                             'alternative_names', alt_name.id)
@@ -113,7 +113,7 @@ class AlternativeNameCreateTest(TestCase):
         self.assertRegex(response_data['url'], url_regex)
         alternative_name = VenueAlternativeName.objects.get(pk=venue_id)
         self.assertEqual(alternative_name.name, post_data['name'])
-        self.assertEqual(alternative_name.venue.id, venue.id)
+        self.assertEqual(alternative_name.venue_id, venue.id)
 
     def test_missing_name(self):
         """Create an alternative name without a name"""
@@ -128,7 +128,7 @@ class AlternativeNameEditTest(TestCase):
         """Edit an alternative name"""
         alt_name = create_venue_alternative_name()
         put_data = {'name': random_string()}
-        url = '/v1/venues/{}/alternative_names/{}'.format(alt_name.venue.id,
+        url = '/v1/venues/{}/alternative_names/{}'.format(alt_name.venue_id,
                                                           alt_name.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
@@ -138,9 +138,9 @@ class AlternativeNameEditTest(TestCase):
         response_data = json.loads(response.content.decode(response.charset))
         self.assertEqual(response_data['id'], alt_name.id)
         self.assertEqual(response_data['name'], put_data['name'])
-        self.assertEqual(response_data['venue'], alt_name.venue.id)
+        self.assertEqual(response_data['venue'], alt_name.venue_id)
         url_regex = r'/v1/venues/{}/alternative_names/{}$'.format(
-            alt_name.venue.id, alt_name.id)
+            alt_name.venue_id, alt_name.id)
         self.assertRegex(response_data['url'], url_regex)
         alt_name.refresh_from_db()
         self.assertEqual(alt_name.name, put_data['name'])
@@ -180,7 +180,7 @@ class AlternativeNameEditTest(TestCase):
         """Edit an alternative name without a name"""
         alt_name = create_venue_alternative_name()
         put_data = {}
-        url = '/v1/venues/{}/alternative_names/{}'.format(alt_name.venue.id,
+        url = '/v1/venues/{}/alternative_names/{}'.format(alt_name.venue_id,
                                                           alt_name.id)
         response = self.client.put(url,
                                    json.dumps(put_data),
@@ -192,9 +192,9 @@ class AlternativeNameDeleteTest(DeleteTestCase):
         """Test deleting venue alternative names."""
         alt_name = create_venue_alternative_name()
         other_venue = create_venue()
-        self.assertSuccess('venues', alt_name.venue.id,
+        self.assertSuccess('venues', alt_name.venue_id,
                            'alternative_names', alt_name.id)
-        self.assertNotFound('venues', alt_name.venue.id,
+        self.assertNotFound('venues', alt_name.venue_id,
                             'alternative_names', 'no_such_alt_name')
         self.assertNotFound('venues', 'no_such_venue',
                             'alternative_names', alt_name.id)
