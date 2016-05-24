@@ -12,7 +12,6 @@ class LeagueList(generics.ListCreateAPIView):
 
 
 class LeagueDetail(generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
     queryset = models.League.objects.all()
     serializer_class = serializers.LeagueSerializer
 
@@ -37,7 +36,6 @@ class TeamList(TeamView, generics.ListCreateAPIView):
 
 
 class TeamDetail(TeamView, generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
     serializer_class = serializers.TeamSerializer
 
     def update(self, request, *args, **kwargs):
@@ -74,7 +72,6 @@ class TeamAlternativeNameList(TeamAlternativeNameView,
 
 class TeamAlternativeNameDetail(TeamAlternativeNameView,
                                 generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
     serializer_class = serializers.TeamAlternativeNameSerializer
 
     def update(self, request, *args, **kwargs):
@@ -104,7 +101,6 @@ class SeasonList(SeasonView, generics.ListCreateAPIView):
 
 
 class SeasonDetail(SeasonView, generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
     serializer_class = serializers.SeasonSerializer
 
     def update(self, request, *args, **kwargs):
@@ -138,7 +134,6 @@ class GameList(GameView, generics.ListCreateAPIView):
 
 
 class GameDetail(GameView, generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
     serializer_class = serializers.GameSerializer
 
     def update(self, request, *args, **kwargs):
@@ -154,7 +149,6 @@ class VenueList(generics.ListCreateAPIView):
 
 
 class VenueDetail(generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
 
@@ -183,7 +177,6 @@ class VenueAlternativeNameList(VenueAlternativeNameView,
 
 class VenueAlternativeNameDetail(VenueAlternativeNameView,
                                  generics.RetrieveUpdateDestroyAPIView):
-    lookup_field = 'id'
     serializer_class = serializers.VenueAlternativeNameSerializer
 
     def update(self, request, *args, **kwargs):
