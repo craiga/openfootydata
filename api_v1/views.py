@@ -4,15 +4,18 @@ from rest_framework import generics
 from models import models
 from api_v1 import serializers
 
+
 class LeagueList(generics.ListCreateAPIView):
     queryset = models.League.objects.all()
     serializer_class = serializers.LeagueSerializer
     filter_fields = ('name',)
 
+
 class LeagueDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     queryset = models.League.objects.all()
     serializer_class = serializers.LeagueSerializer
+
 
 class TeamView:
     def get_queryset(self):
@@ -23,6 +26,7 @@ class TeamView:
             raise Http404
         return models.Team.objects.filter(league=league)
 
+
 class TeamList(TeamView, generics.ListCreateAPIView):
     serializer_class = serializers.TeamSerializer
     filter_fields = ('name', 'alternative_names__name')
@@ -31,6 +35,7 @@ class TeamList(TeamView, generics.ListCreateAPIView):
         request.data['league'] = kwargs['league_id']
         return super(TeamList, self).create(request, *args, **kwargs)
 
+
 class TeamDetail(TeamView, generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     serializer_class = serializers.TeamSerializer
@@ -38,6 +43,7 @@ class TeamDetail(TeamView, generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(TeamDetail, self).update(request, *args, **kwargs)
+
 
 class TeamAlternativeNameView:
     def get_queryset(self):
@@ -53,6 +59,7 @@ class TeamAlternativeNameView:
             raise Http404
         return models.TeamAlternativeName.objects.filter(team=team)
 
+
 class TeamAlternativeNameList(TeamAlternativeNameView,
                               generics.ListCreateAPIView):
     serializer_class = serializers.TeamAlternativeNameSerializer
@@ -63,6 +70,7 @@ class TeamAlternativeNameList(TeamAlternativeNameView,
         return super(TeamAlternativeNameList, self).create(request,
                                                             *args,
                                                             **kwargs)
+
 
 class TeamAlternativeNameDetail(TeamAlternativeNameView,
                                 generics.RetrieveUpdateDestroyAPIView):
@@ -75,6 +83,7 @@ class TeamAlternativeNameDetail(TeamAlternativeNameView,
                                                               *args,
                                                               **kwargs)
 
+
 class SeasonView:
     def get_queryset(self):
         league_id = self.kwargs['league_id']
@@ -84,6 +93,7 @@ class SeasonView:
             raise Http404
         return models.Season.objects.filter(league=league)
 
+
 class SeasonList(SeasonView, generics.ListCreateAPIView):
     serializer_class = serializers.SeasonSerializer
     filter_fields = ('name',)
@@ -92,6 +102,7 @@ class SeasonList(SeasonView, generics.ListCreateAPIView):
         request.data['league'] = kwargs['league_id']
         return super(SeasonList, self).create(request, *args, **kwargs)
 
+
 class SeasonDetail(SeasonView, generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     serializer_class = serializers.SeasonSerializer
@@ -99,6 +110,7 @@ class SeasonDetail(SeasonView, generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         return super(SeasonDetail, self).update(request, *args, **kwargs)
+
 
 class GameView:
     def get_queryset(self):
@@ -114,6 +126,7 @@ class GameView:
             raise Http404
         return models.Game.objects.filter(season=season)
 
+
 class GameList(GameView, generics.ListCreateAPIView):
     serializer_class = serializers.GameSerializer
     ordering = ('start',)
@@ -122,6 +135,7 @@ class GameList(GameView, generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         request.data['season'] = kwargs['season_id']
         return super(GameList, self).create(request, *args, **kwargs)
+
 
 class GameDetail(GameView, generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
@@ -132,15 +146,18 @@ class GameDetail(GameView, generics.RetrieveUpdateDestroyAPIView):
         request.data['season'] = kwargs['season_id']
         return super(GameDetail, self).update(request, *args, **kwargs)
 
+
 class VenueList(generics.ListCreateAPIView):
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
     filter_fields = ('name', 'alternative_names__name',)
 
+
 class VenueDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
+
 
 class VenueAlternativeNameView:
     def get_queryset(self):
@@ -150,6 +167,7 @@ class VenueAlternativeNameView:
         except models.Venue.DoesNotExist:
             raise Http404
         return models.VenueAlternativeName.objects.filter(venue=venue)
+
 
 class VenueAlternativeNameList(VenueAlternativeNameView,
                                generics.ListCreateAPIView):
@@ -161,6 +179,7 @@ class VenueAlternativeNameList(VenueAlternativeNameView,
         return super(VenueAlternativeNameList, self).create(request,
                                                             *args,
                                                             **kwargs)
+
 
 class VenueAlternativeNameDetail(VenueAlternativeNameView,
                                  generics.RetrieveUpdateDestroyAPIView):
