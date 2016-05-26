@@ -4,12 +4,12 @@ from decimal import Decimal
 from django.test import TestCase
 
 from models.models import Venue
-from .helpers import (create_venue,
-                      create_venue_alternative_name,
-                      random_string,
-                      random_decimal,
-                      DeleteTestCase,
-                      GetTestCase)
+from . import (create_venue,
+               create_venue_alternative_name,
+               random_string,
+               random_decimal,
+               DeleteTestCase,
+               GetTestCase)
 
 
 class VenueTestCase(TestCase):

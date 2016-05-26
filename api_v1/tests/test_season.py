@@ -3,11 +3,11 @@ import json
 from django.test import TestCase
 
 from models.models import Season
-from .helpers import (create_season,
-                      create_league,
-                      random_string,
-                      DeleteTestCase,
-                      GetTestCase)
+from . import (create_season,
+               create_league,
+               random_string,
+               DeleteTestCase,
+               GetTestCase)
 
 
 class SeasonTestCase:

@@ -4,12 +4,12 @@ import re
 from django.test import TestCase
 
 from models.models import TeamAlternativeName
-from .helpers import (create_team_alternative_name,
-                      create_league,
-                      create_team,
-                      random_string,
-                      DeleteTestCase,
-                      GetTestCase)
+from . import (create_team_alternative_name,
+               create_league,
+               create_team,
+               random_string,
+               DeleteTestCase,
+               GetTestCase)
 
 class TeamAlternativeNameTestCase:
     """Base class for all team alternative name tests."""
@@ -84,7 +84,7 @@ class AlternativeNameListTest(GetTestCase, TeamAlternativeNameTestCase):
         league = create_league()
         team = create_team(league=league, num_alternative_names=0)
         alt_names = (create_team_alternative_name(team),
-                     create_team_alternative_name(team))
+                  create_team_alternative_name(team))
         other_team = create_team(league=league)
         other_team_alt_name = create_team_alternative_name(team=other_team)
         other_league_alt_name = create_team_alternative_name()

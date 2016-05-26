@@ -3,13 +3,13 @@ import json
 from django.test import TestCase
 
 from models.models import Team
-from .helpers import (create_team,
-                      create_team_alternative_name,
-                      create_league,
-                      random_string,
-                      random_colour,
-                      DeleteTestCase,
-                      GetTestCase)
+from . import (create_team,
+               create_team_alternative_name,
+               create_league,
+               random_string,
+               random_colour,
+               DeleteTestCase,
+               GetTestCase)
 
 class TeamTestCase(TestCase):
     """Base class for team tests."""

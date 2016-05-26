@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse as url_reverse
 
 from models.models import League
-from .helpers import create_league, random_string, DeleteTestCase, GetTestCase
+from . import create_league, random_string, DeleteTestCase, GetTestCase
 
 
 class LeagueTestCase:

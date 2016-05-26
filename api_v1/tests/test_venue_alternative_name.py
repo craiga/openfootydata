@@ -4,11 +4,11 @@ import re
 from django.test import TestCase
 
 from models.models import VenueAlternativeName
-from .helpers import (create_venue_alternative_name,
-                      create_venue,
-                      random_string,
-                      DeleteTestCase,
-                      GetTestCase)
+from . import (create_venue_alternative_name,
+               create_venue,
+               random_string,
+               DeleteTestCase,
+               GetTestCase)
 
 
 class VenueAlternativeNameTestCase:
@@ -73,7 +73,7 @@ class AlternativeNameListTest(GetTestCase, VenueAlternativeNameTestCase):
         """Get a list of alternative_names."""
         venue = create_venue(num_alternative_names=0)
         alt_names = (create_venue_alternative_name(venue),
-                     create_venue_alternative_name(venue))
+                  create_venue_alternative_name(venue))
         other_venue_alt_name = create_venue_alternative_name()
         self.assertSuccess('venues', venue.id, 'alternative_names')
         json = self.assertJson()

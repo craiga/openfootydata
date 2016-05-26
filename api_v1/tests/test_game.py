@@ -9,15 +9,15 @@ import dateutil.parser
 import pytz
 
 from models.models import Game
-from .helpers import (create_game,
-                      create_season,
-                      create_league,
-                      create_venue,
-                      create_team,
-                      random_string,
-                      random_datetime,
-                      GetTestCase,
-                      DeleteTestCase)
+from . import (create_game,
+               create_season,
+               create_league,
+               create_venue,
+               create_team,
+               random_string,
+               random_datetime,
+               GetTestCase,
+               DeleteTestCase)
 from .test_team import TeamTestCase
 from .test_venue import VenueTestCase
 
