@@ -15,11 +15,11 @@ urlpatterns = [
         views.TeamDetail.as_view(),
         name='team_detail'),
     url(r'^leagues/(?P<league_id>\w+)/teams/(?P<team_id>\w+)'
-            '/alternative_names$',
+        '/alternative_names$',
         views.TeamAlternativeNameList.as_view(),
         name='team_alternative_name_list'),
     url(r'^leagues/(?P<league_id>\w+)/teams/(?P<team_id>\w+)'
-            '/alternative_names/(?P<pk>\d+)$',
+        '/alternative_names/(?P<pk>\d+)$',
         views.TeamAlternativeNameDetail.as_view(),
         name='team_alternative_name_detail'),
     url(r'^leagues/(?P<league_id>\w+)/seasons$',
@@ -32,7 +32,7 @@ urlpatterns = [
         views.GameList.as_view(),
         name='game_list'),
     url(r'^leagues/(?P<league_id>\w+)/seasons/(?P<season_id>\w+)'
-            '/games/(?P<pk>\d+)$',
+        '/games/(?P<pk>\d+)$',
         views.GameDetail.as_view(),
         name='game_detail'),
     url(r'^venues$', views.VenueList.as_view(), name='venue_list'),

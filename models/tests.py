@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from .models import Game, Venue
 
+
 class GameScoreTest(TestCase):
     def test_game_score(self):
         """Test calculation of game scores."""
@@ -33,6 +34,7 @@ class GameScoreTest(TestCase):
         game.team_2_behinds = 0
         self.assertEqual(game.team_1_behinds, game.team_1_score)
         self.assertEqual(game.team_2_goals * 6, game.team_2_score)
+
 
 class VenueTimezoneTest(TestCase):
     @mock.patch('timezonefinder.TimezoneFinder.timezone_at')

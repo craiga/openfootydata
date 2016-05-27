@@ -7,6 +7,7 @@ import timezonefinder
 
 from colorful.fields import RGBColorField
 
+
 class League(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
         validators.MinLengthValidator(1),
@@ -17,6 +18,7 @@ class League(models.Model):
     def __str__(self):
         """String representation of a league."""
         return self.name
+
 
 class Team(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
@@ -33,6 +35,7 @@ class Team(models.Model):
         """String representation of a team."""
         return self.name
 
+
 class TeamAlternativeName(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField()
@@ -43,6 +46,7 @@ class TeamAlternativeName(models.Model):
     def __str__(self):
         """String representation of a team's alternative name."""
         return '{} (alternative name of {})'.format(self.name, self.team.name)
+
 
 class Season(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
@@ -55,6 +59,7 @@ class Season(models.Model):
     def __str__(self):
         """String representation of a season."""
         return self.name
+
 
 class Venue(models.Model):
     id = models.CharField(max_length=200, primary_key=True, validators=[
@@ -85,6 +90,7 @@ class Venue(models.Model):
         tf = timezonefinder.TimezoneFinder()
         return tf.timezone_at(lat=self.latitude, lng=self.longitude)
 
+
 class VenueAlternativeName(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField()
@@ -96,6 +102,7 @@ class VenueAlternativeName(models.Model):
         """String representation of a venue's alternative name."""
         return '{} (alternative name of {})'.format(self.name, self.venue.name)
 
+
 class Game(models.Model):
     id = models.AutoField(primary_key=True)
     start = models.DateTimeField()
@@ -104,10 +111,14 @@ class Game(models.Model):
                               on_delete=models.PROTECT,
                               blank=True,
                               null=True)
-    team_1 = models.ForeignKey(Team, on_delete=models.PROTECT, related_name='+')
+    team_1 = models.ForeignKey(Team,
+                               on_delete=models.PROTECT,
+                               related_name='+')
     team_1_goals = models.PositiveIntegerField(default=0)
     team_1_behinds = models.PositiveIntegerField(default=0)
-    team_2 = models.ForeignKey(Team, on_delete=models.PROTECT, related_name='+')
+    team_2 = models.ForeignKey(Team,
+                               on_delete=models.PROTECT,
+                               related_name='+')
     team_2_goals = models.PositiveIntegerField(default=0)
     team_2_behinds = models.PositiveIntegerField(default=0)
 

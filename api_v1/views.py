@@ -16,6 +16,11 @@ class LeagueDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.LeagueSerializer
 
 
+class TeamList(generics.ListCreateAPIView):
+    serializer_class = serializers.TeamSerializer
+    filter_fields = ('name', 'alternative_names__name')
+
+
 class LeagueRelatedViewMixin:
     def get_queryset(self):
         league_id = self.kwargs['league_id']
@@ -33,7 +38,8 @@ class TeamList(LeagueRelatedViewMixin, generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
-        return super(TeamList, self).create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
+
 
 
 class TeamDetail(LeagueRelatedViewMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -41,7 +47,8 @@ class TeamDetail(LeagueRelatedViewMixin, generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
-        return super(TeamDetail, self).update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
+
 
 
 class TeamAlternativeNameView:
@@ -66,9 +73,8 @@ class TeamAlternativeNameList(TeamAlternativeNameView,
 
     def create(self, request, *args, **kwargs):
         request.data['team'] = kwargs['team_id']
-        return super(TeamAlternativeNameList, self).create(request,
-                                                            *args,
-                                                            **kwargs)
+        return super().create(request, *args, **kwargs)
+
 
 
 class TeamAlternativeNameDetail(TeamAlternativeNameView,
@@ -77,9 +83,8 @@ class TeamAlternativeNameDetail(TeamAlternativeNameView,
 
     def update(self, request, *args, **kwargs):
         request.data['team'] = kwargs['team_id']
-        return super(TeamAlternativeNameDetail, self).update(request,
-                                                              *args,
-                                                              **kwargs)
+        return super().update(request, *args, **kwargs)
+
 
 
 class SeasonList(LeagueRelatedViewMixin, generics.ListCreateAPIView):
@@ -88,7 +93,8 @@ class SeasonList(LeagueRelatedViewMixin, generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
-        return super(SeasonList, self).create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
+
 
 
 class SeasonDetail(LeagueRelatedViewMixin,
@@ -97,7 +103,8 @@ class SeasonDetail(LeagueRelatedViewMixin,
 
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
-        return super(SeasonDetail, self).update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
+
 
 
 class GameView:
@@ -122,7 +129,8 @@ class GameList(GameView, generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         request.data['season'] = kwargs['season_id']
-        return super(GameList, self).create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
+
 
 
 class GameDetail(GameView, generics.RetrieveUpdateDestroyAPIView):
@@ -131,7 +139,8 @@ class GameDetail(GameView, generics.RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         request.data['league'] = kwargs['league_id']
         request.data['season'] = kwargs['season_id']
-        return super(GameDetail, self).update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
+
 
 
 class VenueList(generics.ListCreateAPIView):
@@ -143,6 +152,11 @@ class VenueList(generics.ListCreateAPIView):
 class VenueDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.Venue.objects.all()
     serializer_class = serializers.VenueSerializer
+
+
+class VenueAlternativeNameList(generics.ListCreateAPIView):
+    serializer_class = serializers.VenueAlternativeNameSerializer
+    filter_fields = ('name',)
 
 
 class VenueAlternativeNameView:
@@ -162,9 +176,8 @@ class VenueAlternativeNameList(VenueAlternativeNameView,
 
     def create(self, request, *args, **kwargs):
         request.data['venue'] = kwargs['venue_id']
-        return super(VenueAlternativeNameList, self).create(request,
-                                                            *args,
-                                                            **kwargs)
+        return super().create(request, *args, **kwargs)
+
 
 
 class VenueAlternativeNameDetail(VenueAlternativeNameView,
@@ -173,6 +186,4 @@ class VenueAlternativeNameDetail(VenueAlternativeNameView,
 
     def update(self, request, *args, **kwargs):
         request.data['venue'] = kwargs['venue_id']
-        return super(VenueAlternativeNameDetail, self).update(request,
-                                                              *args,
-                                                              **kwargs)
+        return super().update(request, *args, **kwargs)
