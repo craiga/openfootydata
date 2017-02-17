@@ -82,13 +82,13 @@ WSGI_APPLICATION = 'openfootydata.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.getenv('OFD_DB_NAME', 'openfootydata'),
-        'USER': os.getenv('OFD_DB_USER'),
-        'PASSWORD': os.getenv('OFD_DB_PASSWORD'),
-        'HOST': os.getenv('OFD_DB_HOST')
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
