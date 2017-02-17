@@ -1,0 +1,10 @@
+pip-tools
+django-nose
+Django
+psycopg2
+djangorestframework < 3.5
+pytz
+timezonefinder
+django-colorful
+django-filter
+python-dateutil

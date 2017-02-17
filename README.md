@@ -5,18 +5,23 @@
 
 An API for Australian Football data.
 
-# Requirements
+# Starting Development Environment
 
- * Python 3
- * PostgreSQL
+    docker-compose up
 
-# Getting Started
+To run migrations:
 
-    pip install -r requirements.txt
-    psql --command="CREATE DATABASE openfootydata"
-    python manage.py migrate
-    python manage.py runserver
+    docker-compose run --rm web python manage.py migrate
 
-# Run Tests
+# Managing Dependencies
 
-    python manage.py test
+Dependencies are managed using pip-tools. To install a new dependency, add it to requirements.in and then run the following:
+
+    docker-compose run --rm web pip-compile
+    docker-compose build
+
+# Quality Assurance
+
+To run tests:
+
+    docker-compose run --rm web nosetests
