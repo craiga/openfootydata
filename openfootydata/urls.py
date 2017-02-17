@@ -16,7 +16,10 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from rest_framework_swagger.views import get_swagger_view
+
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^swagger-v1/', get_swagger_view(title='Open Footy Data API')),
     url(r'^v1/', include('api_v1.urls', namespace='api_v1')),
 ]

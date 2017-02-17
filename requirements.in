@@ -8,3 +8,4 @@ timezonefinder
 django-colorful
 django-filter
 python-dateutil
+django-rest-swagger

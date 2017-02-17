@@ -41,7 +41,8 @@ INSTALLED_APPS = (
     'rest_framework',
     'colorful',
     'api_v1',
-    'django_nose'
+    'django_nose',
+    'rest_framework_swagger'
 )
 
 MIDDLEWARE_CLASSES = (
