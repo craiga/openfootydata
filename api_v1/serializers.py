@@ -15,6 +15,7 @@ class LeagueSerializer(ModelSerializer):
 
     class Meta:
         model = models.League
+        fields = '__all__'
 
 
 class LeagueRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
@@ -45,6 +46,7 @@ class TeamSerializer(ModelSerializer):
 
     class Meta:
         model = models.Team
+        fields = '__all__'
 
 
 class TeamHyperlink(HyperlinkedRelatedField):
@@ -81,6 +83,7 @@ class TeamAlternativeNameSerializer(ModelSerializer):
 
     class Meta:
         model = models.TeamAlternativeName
+        fields = '__all__'
 
 
 class SeasonSerializer(ModelSerializer):
@@ -91,6 +94,7 @@ class SeasonSerializer(ModelSerializer):
 
     class Meta:
         model = models.Season
+        fields = '__all__'
 
 
 class GameSerializer(ModelSerializer):
@@ -105,6 +109,7 @@ class GameSerializer(ModelSerializer):
 
     class Meta:
         model = models.Game
+        fields = '__all__'
 
 
 class VenueSerializer(ModelSerializer):
@@ -116,6 +121,7 @@ class VenueSerializer(ModelSerializer):
 
     class Meta:
         model = models.Venue
+        fields = '__all__'
 
 
 class VenueRelatedHyperlinkedIdentityField(HyperlinkedIdentityField):
@@ -132,3 +138,4 @@ class VenueAlternativeNameSerializer(ModelSerializer):
 
     class Meta:
         model = models.VenueAlternativeName
+        fields = '__all__'
